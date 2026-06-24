@@ -4,10 +4,25 @@ export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// Gunakan global object untuk menyimpan koneksi agar tidak terus-menerus
+// membuat koneksi baru saat fungsi dipanggil berulang kali (Singleton Pattern)
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
+}
+
+// Fungsi ini MENCEGAH Prisma dipanggil saat proses build Vercel
+const getPrisma = () => {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = new PrismaClient();
+  }
+  return globalForPrisma.prisma;
+}
 
 export async function POST(request: Request) {
   try {
+    // 1. Inisialisasi Prisma HANYA saat ada request POST masuk (Runtime)
+    const prisma = getPrisma();
+
     const body = await request.json();
     
     // Konversi CTP dari angka (1/2/3) menjadi huruf (A/B/C) sesuai skema
