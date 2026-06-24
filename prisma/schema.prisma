@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Patient {
+  patient_id                 String   @id // Menggunakan String sesuai tipe data 'object' Pandas
+
+  // === Demografi & Informasi Dasar ===
+  usia                       Float?   // float64 (kemungkinan karena ada NaN)
+  age_group                  String?  // category (tambahan kolom baru)
+  jk                         String?  // object
+  ctp                        String?  // object
+  imt                        Float?   // float64
+  imt_kategori               String?  // object
+  diagnosa                   String?  // object
+  durasi_penyakit            String?  // object
+  daerah_asal                String?  // object
+  etiologi                   String?  // object
+  alkohol                    Float?   // float64 (diisi representasi angka, misal 0/1)
+
+  // === Komplikasi (float64 di Pandas) ===
+  komp_ascites               Float?
+  komp_jaundice              Float?
+  komp_eh                    Float?
+  komp_varises               Float?
+  komp_melena                Float?
+  komp_sbp                   Float?
+
+  // === Komorbid / Penyakit Penyerta (float64 di Pandas) ===
+  komor_dm                   Float?
+  komor_ht                   Float?
+  komor_pgk                  Float?
+  komor_pneumonia            Float?
+  komor_sepsis               Float?
+
+  // === Fungsi Ginjal ===
+  gfr                        Float?   // float64
+  gfr_kategori               String?  // object
+
+  // === Data Laboratorium ===
+  // Beberapa min/max/mean/last berupa 'object', sedangkan N/baseline berupa 'float64'
+  // SGPT
+  sgpt_min                   String?  // object
+  sgpt_max                   Float?   // float64
+  sgpt_mean                  String?  // object
+  sgpt_n                     Float?   // float64
+  sgpt_baseline              Float?   // float64
+  sgpt_last                  String?  // object
+
+  // SGOT
+  sgot_min                   String?  // object
+  sgot_max                   String?  // object
+  sgot_mean                  String?  // object
+  sgot_n                     Float?   // float64
+  sgot_baseline              Float?   // float64
+  sgot_last                  String?  // object
+
+  // Albumin
+  albumin_min                String?  // object
+  albumin_max                String?  // object
+  albumin_mean               String?  // object
+  albumin_n                  String?  // object
+  albumin_baseline           Float?   // float64
+  albumin_last               String?  // object
+
+  // Bilirubin
+  bilirubin_min              String?  // object
+  bilirubin_max              String?  // object
+  bilirubin_mean             String?  // object
+  bilirubin_n                Float?   // float64
+  bilirubin_baseline         Float?   // float64
+  bilirubin_last             String?  // object
+
+  // INR
+  inr_min                    String?  // object
+  inr_max                    String?  // object
+  inr_mean                   String?  // object
+  inr_n                      String?  // object
+  inr_baseline               Float?   // float64
+  inr_last                   String?  // object
+
+  // Kreatinin
+  kreatinin_min              String?  // object
+  kreatinin_max              String?  // object
+  kreatinin_mean             String?  // object
+  kreatinin_n                String?  // object
+  kreatinin_baseline         Float?   // float64
+  kreatinin_last             String?  // object
+
+  // Urea
+  urea_min                   String?  // object
+  urea_max                   String?  // object
+  urea_mean                  String?  // object
+  urea_n                     Float?   // float64
+  urea_baseline              Float?   // float64
+  urea_last                  String?  // object
+
+  // Kalium
+  kalium_min                 String?  // object
+  kalium_max                 String?  // object
+  kalium_mean                String?  // object
+  kalium_n                   String?  // object
+  kalium_baseline            Float?   // float64
+  kalium_last                String?  // object
+
+  // Natrium
+  natrium_min                Float?   // float64
+  natrium_max                String?  // object
+  natrium_mean               String?  // object
+  natrium_n                  Float?   // float64
+  natrium_baseline           Float?   // float64
+  natrium_last               Float?   // float64
+
+  // Klorida
+  klorida_min                String?  // object
+  klorida_max                String?  // object
+  klorida_mean               String?  // object
+  klorida_n                  Float?   // float64
+  klorida_baseline           Float?   // float64
+  klorida_last               String?  // object
+
+  // === Pengobatan & Kesesuaian Dosis ===
+  // Diuretik
+  diuretik_ada               Float?   // float64
+  diuretik_dosis_aktual      String?  // object
+  diuretik_spiro_dosis       Float?   // float64
+  diuretik_furo_dosis        String?  // object
+  diuretik_kesesuaian_spiro  String?  // object
+  diuretik_kesesuaian_gfr    String?  // object
+  diuretik_kesesuaian        String?  // object
+  diuretik_rekom_komorbid    String?  // object
+
+  // Beta Blocker
+  betabloker_ada             Float?   // float64
+  betabloker_dosis_aktual    String?  // object
+  betabloker_propranolol_dosis Float? // float64
+  betabloker_kesesuaian      String?  // object
+  betabloker_rekom_ctp       String?  // object
+
+  // Analgetik
+  analgetik_ada              Float?   // float64
+  analgetik_dosis_aktual     String?  // object
+  analgetik_paracetamol_dosis Float?  // float64
+  analgetik_kesesuaian       String?  // object
+
+  // Antibiotik (Berupa float64 di Pandas)
+  antibiotik_ada                 Float?
+  antibiotik_dosis_aktual        String?  // object
+  antibiotik_ceftriaxone_ada     Float?
+  antibiotik_ceftriaxone_dosis   Float?
+  antibiotik_cefotaxime_ada      Float?
+  antibiotik_cefotaxime_dosis    Float?
+  antibiotik_cefepime_ada        Float?
+  antibiotik_cefepime_dosis      Float?
+  antibiotik_ampisul_ada         Float?
+  antibiotik_ampisul_dosis       Float?
+  antibiotik_levofloxacin_ada    Float?
+  antibiotik_levofloxacin_dosis  Float?
+  antibiotik_azithromycin_ada    Float?
+  antibiotik_azithromycin_dosis  Float?
+  antibiotik_ampisul_kesesuaian  String?  // object
+  antibiotik_ceftri_kesesuaian   String?  // object
+  antibiotik_levo_kesesuaian     String?  // object
+  antibiotik_azithro_kesesuaian  String?  // object
+  antibiotik_kesesuaian_gabungan String?  // object
+
+  // Statin & Lainnya
+  statin_ada                 Float?   // float64
+  statin_dosis_aktual        String?  // object
+  statin_kesesuaian          String?  // object
+  lainnya_dosis_aktual       String?  // object
+
+  // === Detail Resep & Regimen ===
+  jumlah_obat                String?  // object
+  obat_pulang                String?  // object
+  dosis_awal                 String?  // object
+  dosis_akhir                String?  // object
+  durasi_penggunaan          String?  // object
+  penyesuaian_dosis          String?  // object
+  frekuensi_penggunaan       String?  // object
+
+  // === Outcome & Status ===
+  outcome_perbaikan          String?  // object
+  outcome_keluhan            String?  // object
+  outcome_biokimia           String?  // object
+  outcome_efek_samping       String?  // object
+  lama_rawat                 Int      // int64 di Pandas -> Int (Non-nullable jika tidak ada data kosong)
+  status_keluar              String?  // object
+
+  @@map("patient")
+}
