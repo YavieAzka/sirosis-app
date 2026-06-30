@@ -23,7 +23,8 @@ export default function Home() {
   const [dosisData, setDosisData] = useState({
     gfr: '', ctp: 'A', map_value: '', berat_badan: '',
     ascites_refrakter: 0, hrs: 0, gagal_ginjal_akut: 0, hiperkalemia_berat: 0,
-    ada_infeksi: 0, butuh_antibiotik: 0, jenis_antibiotik: 'ampisilin_sulbaktam'
+    ada_infeksi: 0, butuh_antibiotik: 0, jenis_antibiotik: 'ampisilin_sulbaktam', 
+    jenis_betabloker: 'propranolol' // <--- TAMBAHAN BARU
   });
   const [loadingDosis, setLoadingDosis] = useState(false);
   const [dosisResult, setDosisResult] = useState<any>(null);
@@ -55,7 +56,7 @@ export default function Home() {
   const handleSaveToDatabase = async () => {
     setSaving(true);
     try {
-      await fetch('/api/save', { method: 'POST', body: JSON.stringify({...formData, probability: prediction}) });
+      await fetch('/database/save', { method: 'POST', body: JSON.stringify({...formData, probability: prediction}) });
       alert('Data berhasil disimpan ke Supabase!');
       setShowModal(false);
     } catch (error) { alert('Gagal menyimpan ke database.'); } 
@@ -67,12 +68,16 @@ export default function Home() {
     setLoadingDosis(true);
     try {
       const res = await fetch('/api/dosis', {
-        method: 'POST', body: JSON.stringify(dosisData),
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, // <-- Tambahkan baris ini
+        body: JSON.stringify(dosisData),
       });
       const data = await res.json();
       if (res.ok) setDosisResult(data);
       else alert(data.error || 'Terjadi kesalahan sistem dosis.');
-    } catch (error) { alert('Gagal menghubungi server rekomendasi.'); } 
+    } catch (error) { 
+      alert('Gagal menghubungi server rekomendasi.'); 
+    } 
     finally { setLoadingDosis(false); }
   };
 
@@ -148,6 +153,14 @@ export default function Home() {
                       <option value="A">A</option><option value="B">B</option><option value="C">C</option>
                     </select></div>
                 </div>
+
+                <div className="mt-4">
+    <label className="block text-xs font-bold text-gray-700 mb-1">Rencana Beta-Blocker</label>
+    <select className="w-full border rounded-lg p-2.5 text-sm bg-white" value={dosisData.jenis_betabloker} onChange={(e) => setDosisData({...dosisData, jenis_betabloker: e.target.value})}>
+      <option value="propranolol">Propranolol</option>
+      <option value="carvedilol">Carvedilol</option>
+    </select>
+  </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div><label className="block text-xs font-bold text-gray-700 mb-1">MAP (mmHg) - Opsional</label>
