@@ -23,11 +23,29 @@ export default function Home() {
   const [dosisData, setDosisData] = useState({
     gfr: '', ctp: 'A', map_value: '', berat_badan: '',
     ascites_refrakter: 0, hrs: 0, gagal_ginjal_akut: 0, hiperkalemia_berat: 0,
-    ada_infeksi: 0, butuh_antibiotik: 0, jenis_antibiotik: 'ampisilin_sulbaktam', 
-    jenis_betabloker: 'propranolol' // <--- TAMBAHAN BARU
+    jenis_antibiotik: 'ampisilin_sulbaktam', 
+    jenis_betabloker: 'propranolol',
+    // State baru untuk filter obat
+    obat_pilihan: {
+      diuretik: true,
+      betabloker: true,
+      analgetik: true,
+      antibiotik: false
+    }
   });
   const [loadingDosis, setLoadingDosis] = useState(false);
   const [dosisResult, setDosisResult] = useState<any>(null);
+
+  // Handler Checkbox Obat
+  const handleObatToggle = (obat: string) => {
+    setDosisData(prev => ({
+      ...prev,
+      obat_pilihan: {
+        ...prev.obat_pilihan,
+        [obat]: !(prev.obat_pilihan as any)[obat]
+      }
+    }));
+  };
 
   // ==========================================
   // HANDLERS
@@ -66,11 +84,20 @@ export default function Home() {
   const handlePredictDosis = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoadingDosis(true);
+    
+    // Konversi object {diuretik: true, ...} menjadi list ['diuretik', ...]
+    const selectedDrugsList = Object.entries(dosisData.obat_pilihan)
+      .filter(([_, isSelected]) => isSelected)
+      .map(([key]) => key);
+
     try {
       const res = await fetch('/api/dosis', {
         method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, // <-- Tambahkan baris ini
-        body: JSON.stringify(dosisData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...dosisData,
+          obat_pilihan: selectedDrugsList // Kirim list ke backend
+        }),
       });
       const data = await res.json();
       if (res.ok) setDosisResult(data);
@@ -145,31 +172,78 @@ export default function Home() {
             <div className={`p-8 md:p-10 ${dosisResult ? 'md:w-1/2 border-r border-gray-100' : 'w-full'}`}>
               <div className="mb-6"><h2 className="text-2xl font-extrabold text-red-900">Kondisi Klinis Pasien</h2></div>
               <form onSubmit={handlePredictDosis} className="space-y-5">
+                
+                {/* 1. SELEKSI OBAT (CHECKBOX) */}
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-red-800"></div>
+                  <p className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-3 mb-4">Pilih Rencana Terapi Obat</p>
+                  
+                  <div className="grid grid-cols-1 gap-4">
+                    {/* Diuretik & Analgetik */}
+                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.diuretik} onChange={() => handleObatToggle('diuretik')} />
+                        <span className="text-sm font-semibold text-gray-700">Diuretik</span>
+                      </label>
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.analgetik} onChange={() => handleObatToggle('analgetik')} />
+                        <span className="text-sm font-semibold text-gray-700">Analgetik (Parasetamol)</span>
+                      </label>
+                    </div>
+
+                    {/* Beta-bloker (dengan Dropdown Dinamis) */}
+                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.betabloker} onChange={() => handleObatToggle('betabloker')} />
+                        <span className="text-sm font-semibold text-gray-700">Beta-bloker</span>
+                      </label>
+                      {dosisData.obat_pilihan.betabloker && (
+                        <div className="mt-3 ml-7">
+                          <select className="w-full border-gray-300 rounded-md p-2 text-sm bg-white shadow-sm focus:border-red-800 focus:ring-red-800" value={dosisData.jenis_betabloker} onChange={(e) => setDosisData({...dosisData, jenis_betabloker: e.target.value})}>
+                            <option value="propranolol">Propranolol</option>
+                            <option value="carvedilol">Carvedilol</option>
+                          </select>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Antibiotik (dengan Dropdown Dinamis) */}
+                    <div className="bg-rose-50 p-3 rounded-lg border border-rose-100">
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.antibiotik} onChange={() => handleObatToggle('antibiotik')} />
+                        <span className="text-sm font-bold text-red-900">Antibiotik (Terdapat Indikasi Infeksi)</span>
+                      </label>
+                      {dosisData.obat_pilihan.antibiotik && (
+                        <div className="mt-3 ml-7">
+                          <select className="w-full border-gray-300 rounded-md p-2 text-sm bg-white shadow-sm focus:border-red-800 focus:ring-red-800" value={dosisData.jenis_antibiotik} onChange={(e) => setDosisData({...dosisData, jenis_antibiotik: e.target.value})}>
+                            <option value="ampisilin_sulbaktam">Ampisilin-Sulbaktam</option>
+                            <option value="levofloxacin">Levofloxacin</option>
+                            <option value="azitromisin">Azitromisin</option>
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. KONDISI UMUM */}
                 <div className="grid grid-cols-2 gap-4">
                   <div><label className="block text-xs font-bold text-gray-700 mb-1">GFR (mL/min)</label>
-                    <input type="number" required className="w-full border rounded-lg p-2.5 text-sm" value={dosisData.gfr} onChange={(e) => setDosisData({...dosisData, gfr: e.target.value})} /></div>
+                    <input type="number" required className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.gfr} onChange={(e) => setDosisData({...dosisData, gfr: e.target.value})} /></div>
                   <div><label className="block text-xs font-bold text-gray-700 mb-1">Kelas CTP</label>
-                    <select className="w-full border rounded-lg p-2.5 text-sm bg-white" value={dosisData.ctp} onChange={(e) => setDosisData({...dosisData, ctp: e.target.value})}>
+                    <select className="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white" value={dosisData.ctp} onChange={(e) => setDosisData({...dosisData, ctp: e.target.value})}>
                       <option value="A">A</option><option value="B">B</option><option value="C">C</option>
                     </select></div>
                 </div>
 
-                <div className="mt-4">
-    <label className="block text-xs font-bold text-gray-700 mb-1">Rencana Beta-Blocker</label>
-    <select className="w-full border rounded-lg p-2.5 text-sm bg-white" value={dosisData.jenis_betabloker} onChange={(e) => setDosisData({...dosisData, jenis_betabloker: e.target.value})}>
-      <option value="propranolol">Propranolol</option>
-      <option value="carvedilol">Carvedilol</option>
-    </select>
-  </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div><label className="block text-xs font-bold text-gray-700 mb-1">MAP (mmHg) - Opsional</label>
-                    <input type="number" className="w-full border rounded-lg p-2.5 text-sm" value={dosisData.map_value} onChange={(e) => setDosisData({...dosisData, map_value: e.target.value})} /></div>
-                  <div><label className="block text-xs font-bold text-gray-700 mb-1">Berat Badan (kg)</label>
-                    <input type="number" className="w-full border rounded-lg p-2.5 text-sm" value={dosisData.berat_badan} onChange={(e) => setDosisData({...dosisData, berat_badan: e.target.value})} /></div>
+                    <input type="number" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.map_value} onChange={(e) => setDosisData({...dosisData, map_value: e.target.value})} /></div>
+                  <div><label className="block text-xs font-bold text-gray-700 mb-1">Berat Badan (kg) - Opsional</label>
+                    <input type="number" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.berat_badan} onChange={(e) => setDosisData({...dosisData, berat_badan: e.target.value})} /></div>
                 </div>
 
-                {/* Toggles */}
+                {/* 3. KONDISI AKUT */}
                 <div className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Komplikasi & Kondisi Akut</p>
                   {[
@@ -181,19 +255,6 @@ export default function Home() {
                       <span className="text-sm font-medium text-gray-700">{tg.label}</span>
                     </label>
                   ))}
-                </div>
-
-                <div className="space-y-3 bg-rose-50 p-4 rounded-xl border border-rose-100">
-                  <label className="flex items-center space-x-3 cursor-pointer">
-                    <input type="checkbox" className="w-4 h-4 text-red-800 rounded" checked={dosisData.ada_infeksi === 1} onChange={(e) => setDosisData({...dosisData, ada_infeksi: e.target.checked ? 1 : 0, butuh_antibiotik: e.target.checked ? 1 : 0})} />
-                    <span className="text-sm font-bold text-red-900">Pasien Mengalami Infeksi (Butuh Antibiotik)</span>
-                  </label>
-                  {dosisData.ada_infeksi === 1 && (
-                    <select className="w-full border rounded-lg p-2.5 text-sm bg-white mt-2" value={dosisData.jenis_antibiotik} onChange={(e) => setDosisData({...dosisData, jenis_antibiotik: e.target.value})}>
-                      <option value="ampisilin_sulbaktam">Ampisilin-Sulbaktam</option>
-                      <option value="levofloxacin">Levofloxacin</option>
-                    </select>
-                  )}
                 </div>
 
                 <button type="submit" disabled={loadingDosis} className="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-3.5 rounded-xl shadow-md transition-all">{loadingDosis ? 'Memproses Rule Engine...' : 'Cek Rekomendasi Dosis'}</button>
@@ -210,10 +271,10 @@ export default function Home() {
                 
                 <div className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
                   {Object.entries(dosisResult).map(([key, data]: [string, any]) => (
-                    <div key={key} className={`p-4 rounded-xl border ${data.status.includes('Hindari') ? 'bg-red-50 border-red-200' : data.status.includes('Kurangi') ? 'bg-amber-50 border-amber-200' : 'bg-white border-emerald-200 shadow-sm'}`}>
+                    <div key={key} className={`p-4 rounded-xl border ${data.status.includes('Hindari') ? 'bg-red-50 border-red-200' : data.status.includes('Kurangi') || data.status.includes('Reduce') || data.status.includes('Monitor') ? 'bg-amber-50 border-amber-200' : data.status === 'N/A' ? 'bg-gray-100 border-gray-300' : 'bg-white border-emerald-200 shadow-sm'}`}>
                       <h3 className="font-bold text-gray-900">{data.obat}</h3>
                       <div className="mt-2 flex items-center">
-                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${data.status.includes('Hindari') ? 'bg-red-200 text-red-900' : data.status.includes('Kurangi') ? 'bg-amber-200 text-amber-900' : 'bg-emerald-100 text-emerald-800'}`}>{data.status}</span>
+                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${data.status.includes('Hindari') ? 'bg-red-200 text-red-900' : data.status.includes('Kurangi') || data.status.includes('Reduce') || data.status.includes('Monitor') ? 'bg-amber-200 text-amber-900' : data.status === 'N/A' ? 'bg-gray-200 text-gray-600' : 'bg-emerald-100 text-emerald-800'}`}>{data.status}</span>
                       </div>
                       <p className="mt-3 text-lg font-black text-gray-800">{data.rentang_dosis}</p>
                       {data.frekuensi && <p className="text-sm font-medium text-gray-600 mt-1">Frekuensi: {data.frekuensi}</p>}
@@ -234,7 +295,7 @@ export default function Home() {
         )}
       </div>
 
-      {/* Modal Mortalitas (TETAP SAMA SEPERTI SEBELUMNYA) */}
+      {/* Modal Mortalitas */}
       {showModal && prediction !== null && (
           <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
