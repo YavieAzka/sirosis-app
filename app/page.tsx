@@ -52,7 +52,6 @@ function hitungSkorCtp(params: CtpParams): { total: number; kelas: 'A' | 'B' | '
   return { total, kelas };
 }
 
-// Helper untuk formula CKD-EPI 2021
 function hitungGfrCkdEpi(scr: number, age: number, gender: 'L' | 'P'): string {
   const k = gender === 'P' ? 0.7 : 0.9;
   const alpha = gender === 'P' ? -0.241 : -0.302;
@@ -63,7 +62,6 @@ function hitungGfrCkdEpi(scr: number, age: number, gender: 'L' | 'P'): string {
   return egfr.toFixed(2);
 }
 
-// Komponen Kalkulator Skor CTP - Ditambahkan fitur "children" untuk memuat form manual
 function CtpCalculator({
   active, onToggle, params, onChangeParam, hasil, children
 }: {
@@ -108,7 +106,6 @@ function CtpCalculator({
         </div>
       )}
       
-      {/* Menampilkan input manual di dalam card (disuntikkan via children) */}
       {children}
     </div>
   );
@@ -129,7 +126,6 @@ export default function Home() {
   const [showModalMort, setShowModalMort] = useState(false);
   const [savingMort, setSavingMort] = useState(false);
 
-  // GFR Otomatis Mortalitas
   const [autoGfrMort, setAutoGfrMort] = useState(false);
   const [gfrParamsMort, setGfrParamsMort] = useState({ scr: '', age: '', gender: 'L' });
   const kreatininOptions = Array.from({ length: 150 }, (_, i) => ((i + 1) / 10).toFixed(1));
@@ -145,7 +141,6 @@ export default function Home() {
     }
   }, [autoGfrMort, gfrParamsMort]);
 
-  // CTP Mortalitas
   const [autoCtpMort, setAutoCtpMort] = useState(false);
   const [ctpParamsMort, setCtpParamsMort] = useState<CtpParams>({
     bilirubin: '', albumin: '', inr: '', ascites: '', encephalopathy: '',
@@ -177,7 +172,6 @@ export default function Home() {
   const [showModalLos, setShowModalLos] = useState(false);
   const [savingLos, setSavingLos] = useState(false);
 
-  // GFR Otomatis LoS
   const [autoGfrLos, setAutoGfrLos] = useState(false);
   
   useEffect(() => {
@@ -190,7 +184,6 @@ export default function Home() {
     }
   }, [autoGfrLos, formDataLos.kreatinin_baseline, formDataLos.usia, formDataLos.jk]);
 
-  // CTP LoS
   const [autoCtpLos, setAutoCtpLos] = useState(false);
   const [ctpParamsLos, setCtpParamsLos] = useState<CtpParams>({
     bilirubin: '', albumin: '', inr: '', ascites: '', encephalopathy: '',
@@ -210,13 +203,16 @@ export default function Home() {
   }, [autoCtpLos, skorCtpLos?.kelas, ctpParamsLos.encephalopathy]);
 
   // ==========================================
-  // 3. STATE: DOSIS
+  // 3. STATE: DOSIS (UPDATE TERBARU 8 OBAT)
   // ==========================================
   const [dosisData, setDosisData] = useState({
-    gfr: '', ctp: 'A', map_value: '', berat_badan: '',
-    ascites_refrakter: 0, hrs: 0, gagal_ginjal_akut: 0, hiperkalemia_berat: 0,
-    jenis_antibiotik: 'ampisilin_sulbaktam', jenis_betabloker: 'propranolol',
-    obat_pilihan: { diuretik: true, betabloker: true, analgetik: true, antibiotik: false }
+    gfr: '', ctp: 'A', map_value: '',
+    ascites_refrakter: 0, hrs: 0, gagal_ginjal_akut: 0, sepsis_pneumonia: 0, ast_alt_tinggi: 0,
+    obat_pilihan: {
+      spiro_furo: false, spironolakton: false, furosemid: false,
+      propranolol: false, carvedilol: false,
+      ampisilin_sulbaktam: false, azitromisin: false, levofloxacin: false
+    }
   });
   const [loadingDosis, setLoadingDosis] = useState(false);
   const [dosisResult, setDosisResult] = useState<any>(null);
@@ -232,6 +228,25 @@ export default function Home() {
       setDosisData(prev => (prev.ctp === skorCtpDosis.kelas ? prev : { ...prev, ctp: skorCtpDosis.kelas }));
     }
   }, [autoCtpDosis, skorCtpDosis?.kelas]);
+
+  // Handler untuk toggle satu obat
+  const handleObatToggle = (obat: string) => {
+    setDosisData(prev => ({
+      ...prev, obat_pilihan: { ...prev.obat_pilihan, [obat]: !(prev.obat_pilihan as any)[obat] }
+    }));
+  };
+
+  // Handler untuk pilih/hapus semua obat
+  const handleToggleAllObat = (checked: boolean) => {
+    setDosisData(prev => ({
+      ...prev,
+      obat_pilihan: {
+        spiro_furo: checked, spironolakton: checked, furosemid: checked,
+        propranolol: checked, carvedilol: checked,
+        ampisilin_sulbaktam: checked, azitromisin: checked, levofloxacin: checked
+      }
+    }));
+  };
 
   // ==========================================
   // HANDLERS
@@ -316,7 +331,6 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50 text-gray-800 font-sans py-12 px-4 flex flex-col items-center">
       
-      {/* TABS NAVIGATION */}
       <div className="flex flex-col md:flex-row gap-2 mb-6 max-w-5xl w-full">
         <button onClick={() => setActiveTab('mortalitas')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'mortalitas' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
           📈 AI Prediksi Mortalitas
@@ -353,19 +367,21 @@ export default function Home() {
                     </select>
                   </div>
                   
-                  {/* CTP Card Mortalitas */}
                   <div className="col-span-1 md:col-span-2">
                     <CtpCalculator active={autoCtpMort} onToggle={setAutoCtpMort} params={ctpParamsMort} onChangeParam={(key, value) => setCtpParamsMort(prev => ({ ...prev, [key]: value }))} hasil={skorCtpMort}>
-                        <select 
-                          className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoCtpMort ? 'bg-gray-100 text-red-900 font-bold cursor-not-allowed shadow-inner appearance-none' : 'bg-white text-gray-900'}`} 
-                          value={formDataMort.ctp_encoded} 
-                          disabled={autoCtpMort}
-                          onChange={(e) => !autoCtpMort && setFormDataMort({...formDataMort, ctp_encoded: Number(e.target.value)})}
-                        >
-                          <option value={1}>Kelas A</option>
-                          <option value={2}>Kelas B</option>
-                          <option value={3}>Kelas C</option>
-                        </select>
+                        <div className="space-y-2 mt-4 border-t border-gray-200 pt-4">
+                            <label className="block text-sm font-bold text-gray-700">Skor CTP (Input Manual)</label>
+                            <select 
+                              className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoCtpMort ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-inner' : 'bg-white text-gray-900'}`} 
+                              value={formDataMort.ctp_encoded} 
+                              disabled={autoCtpMort}
+                              onChange={(e) => !autoCtpMort && setFormDataMort({...formDataMort, ctp_encoded: Number(e.target.value)})}
+                            >
+                              <option value={1}>Kelas A</option>
+                              <option value={2}>Kelas B</option>
+                              <option value={3}>Kelas C</option>
+                            </select>
+                        </div>
                     </CtpCalculator>
                   </div>
                   
@@ -376,7 +392,6 @@ export default function Home() {
                     </div>
                   ))}
 
-                  {/* GFR Card Mortalitas */}
                   <div className="col-span-1 md:col-span-2 bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm mt-2">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
                       <label className="text-sm font-bold text-gray-700">Nilai GFR / CKD-EPI (mL/min)</label>
@@ -442,19 +457,21 @@ export default function Home() {
                     </select>
                   </div>
                   
-                  {/* CTP Card LoS */}
                   <div className="col-span-1 md:col-span-2">
                     <CtpCalculator active={autoCtpLos} onToggle={setAutoCtpLos} params={ctpParamsLos} onChangeParam={(key, value) => setCtpParamsLos(prev => ({ ...prev, [key]: value }))} hasil={skorCtpLos}>
-                      <select 
-                        className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoCtpLos ? 'bg-gray-100 text-red-900 font-bold cursor-not-allowed shadow-inner appearance-none' : 'bg-white text-gray-900'}`} 
-                        value={formDataLos.ctp_encoded} 
-                        disabled={autoCtpLos}
-                        onChange={(e) => !autoCtpLos && setFormDataLos({...formDataLos, ctp_encoded: Number(e.target.value)})}
-                      >
-                        <option value={1}>Kelas A</option>
-                        <option value={2}>Kelas B</option>
-                        <option value={3}>Kelas C</option>
-                      </select>
+                      <div className="space-y-2 mt-4 border-t border-gray-200 pt-4">
+                          <label className="block text-sm font-bold text-gray-700">Skor CTP (Input Manual)</label>
+                          <select 
+                            className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoCtpLos ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-inner' : 'bg-white text-gray-900'}`} 
+                            value={formDataLos.ctp_encoded} 
+                            disabled={autoCtpLos}
+                            onChange={(e) => !autoCtpLos && setFormDataLos({...formDataLos, ctp_encoded: Number(e.target.value)})}
+                          >
+                            <option value={1}>Kelas A</option>
+                            <option value={2}>Kelas B</option>
+                            <option value={3}>Kelas C</option>
+                          </select>
+                      </div>
                     </CtpCalculator>
                   </div>
                   
@@ -471,7 +488,6 @@ export default function Home() {
                     </div>
                   ))}
 
-                  {/* GFR Card LoS */}
                   <div className="col-span-1 md:col-span-2 bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm mt-2">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
                       <label className="text-sm font-bold text-gray-700">Nilai GFR / CKD-EPI (mL/min)</label>
@@ -513,88 +529,116 @@ export default function Home() {
         {activeTab === 'dosis' && (
           <div className="animate-fade-in flex flex-col md:flex-row">
             <div className={`p-8 md:p-10 ${dosisResult ? 'md:w-1/2 border-r border-gray-100' : 'w-full'}`}>
-              <div className="mb-6"><h2 className="text-2xl font-extrabold text-red-900">Kondisi Klinis Pasien</h2></div>
+              <div className="mb-6"><h2 className="text-2xl font-extrabold text-red-900">Evaluasi Dosis & Terapi</h2></div>
               <form onSubmit={handlePredictDosis} className="space-y-5">
+                
+                {/* 1. SELEKSI OBAT */}
                 <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-1 h-full bg-red-800"></div>
-                  <p className="text-sm font-bold text-gray-800 border-b border-gray-100 pb-3 mb-4">Pilih Rencana Terapi Obat</p>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.diuretik} onChange={() => setDosisData(prev => ({...prev, obat_pilihan: {...prev.obat_pilihan, diuretik: !prev.obat_pilihan.diuretik}}))} />
-                        <span className="text-sm font-semibold text-gray-700">Diuretik</span>
-                      </label>
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.analgetik} onChange={() => setDosisData(prev => ({...prev, obat_pilihan: {...prev.obat_pilihan, analgetik: !prev.obat_pilihan.analgetik}}))} />
-                        <span className="text-sm font-semibold text-gray-700">Analgetik (Parasetamol)</span>
-                      </label>
+                  <div className="flex justify-between items-center border-b border-gray-100 pb-3 mb-4">
+                    <p className="text-sm font-bold text-gray-800">Pilih Obat untuk Dievaluasi</p>
+                    <button type="button" onClick={() => handleToggleAllObat(true)} className="text-xs font-bold text-red-800 hover:text-red-900 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 transition-colors">Pilih Semua</button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Grup Diuretik */}
+                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 space-y-2">
+                        <p className="text-xs font-bold text-blue-900 mb-2 border-b border-blue-200 pb-1">Diuretik</p>
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.spiro_furo} onChange={() => handleObatToggle('spiro_furo')} />
+                          <span className="text-sm font-semibold text-gray-700">Kombinasi (Spiro+Furo)</span>
+                        </label>
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.spironolakton} onChange={() => handleObatToggle('spironolakton')} />
+                          <span className="text-sm font-semibold text-gray-700">Spironolakton Tunggal</span>
+                        </label>
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.furosemid} onChange={() => handleObatToggle('furosemid')} />
+                          <span className="text-sm font-semibold text-gray-700">Furosemid Tunggal</span>
+                        </label>
                     </div>
-                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.betabloker} onChange={() => setDosisData(prev => ({...prev, obat_pilihan: {...prev.obat_pilihan, betabloker: !prev.obat_pilihan.betabloker}}))} />
-                        <span className="text-sm font-semibold text-gray-700">Beta-bloker</span>
-                      </label>
-                      {dosisData.obat_pilihan.betabloker && (
-                        <div className="mt-3 ml-7">
-                          <select className="w-full border-gray-300 rounded-md p-2 text-sm bg-white shadow-sm focus:border-red-800 focus:ring-red-800" value={dosisData.jenis_betabloker} onChange={(e) => setDosisData({...dosisData, jenis_betabloker: e.target.value})}>
-                            <option value="propranolol">Propranolol</option>
-                            <option value="carvedilol">Carvedilol</option>
-                          </select>
-                        </div>
-                      )}
+
+                    {/* Grup Beta-Bloker */}
+                    <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-100 space-y-2">
+                        <p className="text-xs font-bold text-emerald-900 mb-2 border-b border-emerald-200 pb-1">Beta-Bloker</p>
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.propranolol} onChange={() => handleObatToggle('propranolol')} />
+                          <span className="text-sm font-semibold text-gray-700">Propranolol</span>
+                        </label>
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.carvedilol} onChange={() => handleObatToggle('carvedilol')} />
+                          <span className="text-sm font-semibold text-gray-700">Carvedilol</span>
+                        </label>
                     </div>
-                    <div className="bg-rose-50 p-3 rounded-lg border border-rose-100">
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.antibiotik} onChange={() => setDosisData(prev => ({...prev, obat_pilihan: {...prev.obat_pilihan, antibiotik: !prev.obat_pilihan.antibiotik}}))} />
-                        <span className="text-sm font-bold text-red-900">Antibiotik (Terdapat Indikasi Infeksi)</span>
-                      </label>
-                      {dosisData.obat_pilihan.antibiotik && (
-                        <div className="mt-3 ml-7">
-                          <select className="w-full border-gray-300 rounded-md p-2 text-sm bg-white shadow-sm focus:border-red-800 focus:ring-red-800" value={dosisData.jenis_antibiotik} onChange={(e) => setDosisData({...dosisData, jenis_antibiotik: e.target.value})}>
-                            <option value="ampisilin_sulbaktam">Ampisilin-Sulbaktam</option>
-                            <option value="levofloxacin">Levofloxacin</option>
-                            <option value="azitromisin">Azitromisin</option>
-                          </select>
+
+                    {/* Grup Antibiotik */}
+                    <div className="bg-rose-50 p-3 rounded-lg border border-rose-100 space-y-2 col-span-1 md:col-span-2">
+                        <p className="text-xs font-bold text-rose-900 mb-2 border-b border-rose-200 pb-1">Antibiotik (Bila Terdapat Indikasi Infeksi)</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.ampisilin_sulbaktam} onChange={() => handleObatToggle('ampisilin_sulbaktam')} />
+                              <span className="text-sm font-semibold text-gray-700">Ampisilin-Sulbaktam</span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.levofloxacin} onChange={() => handleObatToggle('levofloxacin')} />
+                              <span className="text-sm font-semibold text-gray-700">Levofloxacin</span>
+                            </label>
+                            <label className="flex items-center space-x-3 cursor-pointer">
+                              <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={dosisData.obat_pilihan.azitromisin} onChange={() => handleObatToggle('azitromisin')} />
+                              <span className="text-sm font-semibold text-gray-700">Azitromisin</span>
+                            </label>
                         </div>
-                      )}
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div><label className="block text-xs font-bold text-gray-700 mb-1">GFR (mL/min)</label>
-                    <input type="number" step="any" required className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.gfr} onChange={(e) => setDosisData({...dosisData, gfr: e.target.value})} /></div>
-                  <div><label className="block text-xs font-bold text-gray-700 mb-1">MAP (mmHg) - Opsional</label>
-                    <input type="number" step="any" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.map_value} onChange={(e) => setDosisData({...dosisData, map_value: e.target.value})} /></div>
-                  <div><label className="block text-xs font-bold text-gray-700 mb-1">Berat Badan (kg) - Opsional</label>
-                    <input type="number" step="any" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.berat_badan} onChange={(e) => setDosisData({...dosisData, berat_badan: e.target.value})} /></div>
+                {/* 2. PARAMETER KLINIS */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Nilai GFR / CrCl (mL/min)</label>
+                    <input type="number" step="any" required className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.gfr} onChange={(e) => setDosisData({...dosisData, gfr: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">MAP (mmHg) - Opsional</label>
+                    <input type="number" step="any" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.map_value} onChange={(e) => setDosisData({...dosisData, map_value: e.target.value})} />
+                  </div>
                 </div>
 
-                {/* CTP Card Dosis */}
                 <CtpCalculator active={autoCtpDosis} onToggle={setAutoCtpDosis} params={ctpParamsDosis} onChangeParam={(key, value) => setCtpParamsDosis(prev => ({ ...prev, [key]: value }))} hasil={skorCtpDosis}>
-                    <select 
-                      className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoCtpDosis ? 'bg-gray-100 text-red-900 font-bold cursor-not-allowed shadow-inner appearance-none' : 'bg-white text-gray-900'}`} 
-                      value={dosisData.ctp} 
-                      disabled={autoCtpDosis}
-                      onChange={(e) => !autoCtpDosis && setDosisData({...dosisData, ctp: e.target.value})}
-                    >
-                      <option value="A">Kelas A</option>
-                      <option value="B">Kelas B</option>
-                      <option value="C">Kelas C</option>
-                    </select>
+                    <div className="space-y-2 mt-4 border-t border-gray-200 pt-4">
+                        <label className="block text-sm font-bold text-gray-700">Kelas CTP (Input Manual)</label>
+                        <select 
+                          className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoCtpDosis ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-inner' : 'bg-white text-gray-900'}`} 
+                          value={dosisData.ctp} 
+                          disabled={autoCtpDosis}
+                          onChange={(e) => !autoCtpDosis && setDosisData({...dosisData, ctp: e.target.value})}
+                        >
+                          <option value="A">Kelas A</option>
+                          <option value="B">Kelas B</option>
+                          <option value="C">Kelas C</option>
+                        </select>
+                    </div>
                 </CtpCalculator>
 
-                <div className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Komplikasi & Kondisi Akut</p>
-                  {[ {id: 'ascites_refrakter', label: 'Ascites Refrakter'}, {id: 'hrs', label: 'Hepatorenal Syndrome (HRS)'}, {id: 'gagal_ginjal_akut', label: 'Gagal Ginjal Akut (AKI)'}, {id: 'hiperkalemia_berat', label: 'Hiperkalemia Berat'} ].map((tg) => (
-                    <label key={tg.id} className="flex items-center space-x-3 cursor-pointer">
-                      <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={(dosisData as any)[tg.id] === 1} onChange={(e) => setDosisData({...dosisData, [tg.id]: e.target.checked ? 1 : 0})} />
-                      <span className="text-sm font-medium text-gray-700">{tg.label}</span>
-                    </label>
-                  ))}
+                <div className="space-y-3 bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
+                  <p className="text-xs font-bold text-gray-800 border-b border-gray-200 pb-2 mb-3 uppercase tracking-wider">Komplikasi & Kondisi Akut</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[ 
+                      {id: 'ascites_refrakter', label: 'Ascites Refrakter'}, 
+                      {id: 'hrs', label: 'Hepatorenal Syndrome (HRS)'}, 
+                      {id: 'gagal_ginjal_akut', label: 'Gagal Ginjal Akut (AKI/CKD)'}, 
+                      {id: 'sepsis_pneumonia', label: 'Sepsis atau Pneumonia'},
+                      {id: 'ast_alt_tinggi', label: 'AST/ALT > 2x Normal'}
+                    ].map((tg) => (
+                      <label key={tg.id} className="flex items-center space-x-3 cursor-pointer bg-white p-2.5 rounded-lg border border-gray-100 shadow-sm hover:bg-red-50 transition-colors">
+                        <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={(dosisData as any)[tg.id] === 1} onChange={(e) => setDosisData({...dosisData, [tg.id]: e.target.checked ? 1 : 0})} />
+                        <span className="text-sm font-medium text-gray-700">{tg.label}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
-                <button type="submit" disabled={loadingDosis} className="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-3.5 rounded-xl shadow-md transition-all">{loadingDosis ? 'Memproses Rule Engine...' : 'Cek Rekomendasi Dosis'}</button>
+                <button type="submit" disabled={loadingDosis} className="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all">{loadingDosis ? 'Memproses Rule Engine...' : 'Cek Rekomendasi Dosis'}</button>
               </form>
             </div>
 
@@ -606,24 +650,36 @@ export default function Home() {
                 </div>
                 
                 <div className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                  {Object.entries(dosisResult).map(([key, data]: [string, any]) => (
-                    <div key={key} className={`p-4 rounded-xl border ${data.status.includes('Hindari') ? 'bg-red-50 border-red-200' : data.status.includes('Kurangi') || data.status.includes('Reduce') || data.status.includes('Monitor') ? 'bg-amber-50 border-amber-200' : data.status === 'N/A' ? 'bg-gray-100 border-gray-300' : 'bg-white border-emerald-200 shadow-sm'}`}>
-                      <h3 className="font-bold text-gray-900">{data.obat}</h3>
-                      <div className="mt-2 flex items-center">
-                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${data.status.includes('Hindari') ? 'bg-red-200 text-red-900' : data.status.includes('Kurangi') || data.status.includes('Reduce') || data.status.includes('Monitor') ? 'bg-amber-200 text-amber-900' : data.status === 'N/A' ? 'bg-gray-200 text-gray-600' : 'bg-emerald-100 text-emerald-800'}`}>{data.status}</span>
-                      </div>
-                      <p className="mt-3 text-lg font-black text-gray-800">{data.rentang_dosis}</p>
-                      {data.frekuensi && <p className="text-sm font-medium text-gray-600 mt-1">Frekuensi: {data.frekuensi}</p>}
-                      <p className="text-xs text-gray-500 mt-3 border-t border-gray-200 pt-2"><b>Alasan:</b> {data.alasan}</p>
-                      
-                      {data.peringatan && data.peringatan.length > 0 && (
-                        <div className="mt-3 bg-red-100 p-2.5 rounded text-xs text-red-800">
-                          <b>Peringatan:</b>
-                          <ul className="list-disc pl-4 mt-1 space-y-0.5">{data.peringatan.map((w: string, i: number) => <li key={i}>{w}</li>)}</ul>
-                        </div>
-                      )}
+                  {dosisResult.info ? (
+                    <div className="p-5 rounded-xl bg-gray-100 border border-gray-300 text-center">
+                      <p className="text-gray-600 font-bold">{dosisResult.info.alasan}</p>
                     </div>
-                  ))}
+                  ) : (
+                    Object.entries(dosisResult).map(([key, data]: [string, any]) => (
+                      <div key={key} className={`p-5 rounded-xl border ${data.status.includes('Avoid') || data.status.includes('Hindari') ? 'bg-red-50 border-red-200' : data.status.includes('Reduce') || data.status.includes('Kurangi') || data.status.includes('Monitor') ? 'bg-amber-50 border-amber-200' : data.status === 'N/A' || data.status === 'Belum Tersedia' ? 'bg-gray-100 border-gray-300' : 'bg-white border-emerald-200 shadow-sm'}`}>
+                        <h3 className="font-extrabold text-gray-900 text-lg">{data.obat}</h3>
+                        <div className="mt-3 flex items-center mb-4">
+                          <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${data.status.includes('Avoid') || data.status.includes('Hindari') ? 'bg-red-200 text-red-900' : data.status.includes('Reduce') || data.status.includes('Kurangi') || data.status.includes('Monitor') ? 'bg-amber-200 text-amber-900' : data.status === 'N/A' || data.status === 'Belum Tersedia' ? 'bg-gray-200 text-gray-600' : 'bg-emerald-100 text-emerald-800'}`}>
+                            {data.status}
+                          </span>
+                        </div>
+                        <p className="text-xl font-black text-gray-800 leading-tight">{data.rentang_dosis}</p>
+                        
+                        <div className="mt-4 border-t border-gray-200 pt-3">
+                          <p className="text-sm text-gray-700 leading-relaxed"><b className="text-gray-900">Alasan:</b> {data.alasan}</p>
+                        </div>
+                        
+                        {data.peringatan && data.peringatan.length > 0 && (
+                          <div className="mt-4 bg-red-100 p-3.5 rounded-lg border border-red-200 text-xs text-red-900 shadow-inner">
+                            <b className="uppercase tracking-wider">Perhatian Khusus:</b>
+                            <ul className="list-disc pl-5 mt-1.5 space-y-1">
+                              {data.peringatan.map((w: string, i: number) => <li key={i} className="leading-relaxed">{w}</li>)}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             )}
