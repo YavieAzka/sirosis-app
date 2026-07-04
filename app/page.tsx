@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 type CtpParamKey = 'bilirubin' | 'albumin' | 'inr' | 'ascites' | 'encephalopathy';
 type CtpParams = Record<CtpParamKey, string>;
@@ -63,17 +63,19 @@ function hitungGfrCkdEpi(scr: number, age: number, gender: 'L' | 'P'): string {
   return egfr.toFixed(2);
 }
 
+// Komponen Kalkulator Skor CTP - Ditambahkan fitur "children" untuk memuat form manual
 function CtpCalculator({
-  active, onToggle, params, onChangeParam, hasil,
+  active, onToggle, params, onChangeParam, hasil, children
 }: {
   active: boolean;
   onToggle: (val: boolean) => void;
   params: CtpParams;
   onChangeParam: (key: CtpParamKey, value: string) => void;
   hasil: { total: number; kelas: 'A' | 'B' | 'C' } | null;
+  children?: React.ReactNode;
 }) {
   return (
-    <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
+    <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm mt-2">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
         <label className="text-sm font-bold text-gray-700">Skor CTP (Child-Turcotte-Pugh)</label>
         <label className="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
@@ -105,6 +107,9 @@ function CtpCalculator({
           )}
         </div>
       )}
+      
+      {/* Menampilkan input manual di dalam card (disuntikkan via children) */}
+      {children}
     </div>
   );
 }
@@ -113,7 +118,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'mortalitas' | 'los' | 'dosis'>('mortalitas');
 
   // ==========================================
-  // 1. STATE: MORTALITAS (Dikembalikan seperti semula)
+  // 1. STATE: MORTALITAS
   // ==========================================
   const [formDataMort, setFormDataMort] = useState({
     komor_sepsis: 0, urea_baseline: '', natrium_baseline: '',
@@ -124,7 +129,7 @@ export default function Home() {
   const [showModalMort, setShowModalMort] = useState(false);
   const [savingMort, setSavingMort] = useState(false);
 
-  // GFR Otomatis Mortalitas (Versi Dropdown Asli)
+  // GFR Otomatis Mortalitas
   const [autoGfrMort, setAutoGfrMort] = useState(false);
   const [gfrParamsMort, setGfrParamsMort] = useState({ scr: '', age: '', gender: 'L' });
   const kreatininOptions = Array.from({ length: 150 }, (_, i) => ((i + 1) / 10).toFixed(1));
@@ -160,7 +165,7 @@ export default function Home() {
   }, [autoCtpMort, skorCtpMort?.kelas, ctpParamsMort.encephalopathy]);
 
   // ==========================================
-  // 2. STATE: LAMA RAWAT (LoS) - Form Baru
+  // 2. STATE: LAMA RAWAT (LoS)
   // ==========================================
   const [formDataLos, setFormDataLos] = useState({
     komor_sepsis: 0, komp_eh: 0, ctp_encoded: 1,
@@ -172,7 +177,7 @@ export default function Home() {
   const [showModalLos, setShowModalLos] = useState(false);
   const [savingLos, setSavingLos] = useState(false);
 
-  // GFR Otomatis LoS (Menarik data dari input form langsung)
+  // GFR Otomatis LoS
   const [autoGfrLos, setAutoGfrLos] = useState(false);
   
   useEffect(() => {
@@ -327,7 +332,7 @@ export default function Home() {
       <div className="max-w-5xl w-full bg-white rounded-3xl md:rounded-t-none shadow-2xl overflow-hidden border border-gray-100">
         
         {/* =================================================================== */}
-        {/* TAB 1: MORTALITAS (Versi Asli) */}
+        {/* TAB 1: MORTALITAS */}
         {/* =================================================================== */}
         {activeTab === 'mortalitas' && (
           <div className="animate-fade-in">
@@ -347,16 +352,21 @@ export default function Home() {
                       <option value={0}>Tidak Ada (0)</option><option value={1}>Ya (1)</option>
                     </select>
                   </div>
-                  <div className="space-y-2 col-span-1 md:col-span-2">
-                    <CtpCalculator active={autoCtpMort} onToggle={setAutoCtpMort} params={ctpParamsMort} onChangeParam={(key, value) => setCtpParamsMort(prev => ({ ...prev, [key]: value }))} hasil={skorCtpMort} />
-                    {!autoCtpMort && (
-                      <div className="space-y-2 mt-4">
-                        <label className="block text-sm font-bold text-gray-700">Skor CTP (Input Manual)</label>
-                        <select className="w-full bg-gray-50 border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800" value={formDataMort.ctp_encoded} onChange={(e) => setFormDataMort({...formDataMort, ctp_encoded: Number(e.target.value)})}>
-                          <option value={1}>Kelas A</option><option value={2}>Kelas B</option><option value={3}>Kelas C</option>
+                  
+                  {/* CTP Card Mortalitas */}
+                  <div className="col-span-1 md:col-span-2">
+                    <CtpCalculator active={autoCtpMort} onToggle={setAutoCtpMort} params={ctpParamsMort} onChangeParam={(key, value) => setCtpParamsMort(prev => ({ ...prev, [key]: value }))} hasil={skorCtpMort}>
+                        <select 
+                          className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoCtpMort ? 'bg-gray-100 text-red-900 font-bold cursor-not-allowed shadow-inner appearance-none' : 'bg-white text-gray-900'}`} 
+                          value={formDataMort.ctp_encoded} 
+                          disabled={autoCtpMort}
+                          onChange={(e) => !autoCtpMort && setFormDataMort({...formDataMort, ctp_encoded: Number(e.target.value)})}
+                        >
+                          <option value={1}>Kelas A</option>
+                          <option value={2}>Kelas B</option>
+                          <option value={3}>Kelas C</option>
                         </select>
-                      </div>
-                    )}
+                    </CtpCalculator>
                   </div>
                   
                   {[ {id: 'urea_baseline', label: 'Urea Baseline (mg/dL)'}, {id: 'natrium_baseline', label: 'Natrium Baseline (mEq/L)'}, {id: 'inr_baseline', label: 'INR Baseline'}, {id: 'sgot_baseline', label: 'SGOT Baseline (U/L)'}].map((f) => (
@@ -366,6 +376,7 @@ export default function Home() {
                     </div>
                   ))}
 
+                  {/* GFR Card Mortalitas */}
                   <div className="col-span-1 md:col-span-2 bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm mt-2">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
                       <label className="text-sm font-bold text-gray-700">Nilai GFR / CKD-EPI (mL/min)</label>
@@ -431,16 +442,20 @@ export default function Home() {
                     </select>
                   </div>
                   
-                  <div className="space-y-2 col-span-1 md:col-span-2">
-                    <CtpCalculator active={autoCtpLos} onToggle={setAutoCtpLos} params={ctpParamsLos} onChangeParam={(key, value) => setCtpParamsLos(prev => ({ ...prev, [key]: value }))} hasil={skorCtpLos} />
-                    {!autoCtpLos && (
-                      <div className="space-y-2 mt-4">
-                        <label className="block text-sm font-bold text-gray-700">Skor CTP (Input Manual)</label>
-                        <select className="w-full bg-gray-50 border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800" value={formDataLos.ctp_encoded} onChange={(e) => setFormDataLos({...formDataLos, ctp_encoded: Number(e.target.value)})}>
-                          <option value={1}>Kelas A</option><option value={2}>Kelas B</option><option value={3}>Kelas C</option>
-                        </select>
-                      </div>
-                    )}
+                  {/* CTP Card LoS */}
+                  <div className="col-span-1 md:col-span-2">
+                    <CtpCalculator active={autoCtpLos} onToggle={setAutoCtpLos} params={ctpParamsLos} onChangeParam={(key, value) => setCtpParamsLos(prev => ({ ...prev, [key]: value }))} hasil={skorCtpLos}>
+                      <select 
+                        className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoCtpLos ? 'bg-gray-100 text-red-900 font-bold cursor-not-allowed shadow-inner appearance-none' : 'bg-white text-gray-900'}`} 
+                        value={formDataLos.ctp_encoded} 
+                        disabled={autoCtpLos}
+                        onChange={(e) => !autoCtpLos && setFormDataLos({...formDataLos, ctp_encoded: Number(e.target.value)})}
+                      >
+                        <option value={1}>Kelas A</option>
+                        <option value={2}>Kelas B</option>
+                        <option value={3}>Kelas C</option>
+                      </select>
+                    </CtpCalculator>
                   </div>
                   
                   {[ 
@@ -456,7 +471,7 @@ export default function Home() {
                     </div>
                   ))}
 
-                  {/* Kalkulator GFR Khusus untuk LoS (Terkoneksi langsung ke form utama) */}
+                  {/* GFR Card LoS */}
                   <div className="col-span-1 md:col-span-2 bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm mt-2">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
                       <label className="text-sm font-bold text-gray-700">Nilai GFR / CKD-EPI (mL/min)</label>
@@ -546,25 +561,28 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div><label className="block text-xs font-bold text-gray-700 mb-1">GFR (mL/min)</label>
                     <input type="number" step="any" required className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.gfr} onChange={(e) => setDosisData({...dosisData, gfr: e.target.value})} /></div>
-                  {!autoCtpDosis && (
-                    <div><label className="block text-xs font-bold text-gray-700 mb-1">Kelas CTP (Manual)</label>
-                      <select className="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white" value={dosisData.ctp} onChange={(e) => setDosisData({...dosisData, ctp: e.target.value})}>
-                        <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                      </select></div>
-                  )}
-                </div>
-
-                <CtpCalculator active={autoCtpDosis} onToggle={setAutoCtpDosis} params={ctpParamsDosis} onChangeParam={(key, value) => setCtpParamsDosis(prev => ({ ...prev, [key]: value }))} hasil={skorCtpDosis} />
-
-                <div className="grid grid-cols-2 gap-4">
                   <div><label className="block text-xs font-bold text-gray-700 mb-1">MAP (mmHg) - Opsional</label>
                     <input type="number" step="any" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.map_value} onChange={(e) => setDosisData({...dosisData, map_value: e.target.value})} /></div>
                   <div><label className="block text-xs font-bold text-gray-700 mb-1">Berat Badan (kg) - Opsional</label>
                     <input type="number" step="any" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.berat_badan} onChange={(e) => setDosisData({...dosisData, berat_badan: e.target.value})} /></div>
                 </div>
+
+                {/* CTP Card Dosis */}
+                <CtpCalculator active={autoCtpDosis} onToggle={setAutoCtpDosis} params={ctpParamsDosis} onChangeParam={(key, value) => setCtpParamsDosis(prev => ({ ...prev, [key]: value }))} hasil={skorCtpDosis}>
+                    <select 
+                      className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoCtpDosis ? 'bg-gray-100 text-red-900 font-bold cursor-not-allowed shadow-inner appearance-none' : 'bg-white text-gray-900'}`} 
+                      value={dosisData.ctp} 
+                      disabled={autoCtpDosis}
+                      onChange={(e) => !autoCtpDosis && setDosisData({...dosisData, ctp: e.target.value})}
+                    >
+                      <option value="A">Kelas A</option>
+                      <option value="B">Kelas B</option>
+                      <option value="C">Kelas C</option>
+                    </select>
+                </CtpCalculator>
 
                 <div className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Komplikasi & Kondisi Akut</p>
