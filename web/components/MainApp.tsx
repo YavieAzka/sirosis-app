@@ -6,7 +6,9 @@ import CtpCalculator from './CtpCalculator';
 export default function MainApp() {
   const [activeTab, setActiveTab] = useState<'mortalitas' | 'los' | 'dosis'>('mortalitas');
 
-  // MORTALITAS STATE
+  // ==========================================
+  // 1. MORTALITAS STATE
+  // ==========================================
   const [formDataMort, setFormDataMort] = useState({
     komor_sepsis: 0, urea_baseline: '', natrium_baseline: '',
     komp_eh: 0, inr_baseline: '', sgot_baseline: '', gfr: '', ctp_encoded: 1,
@@ -18,8 +20,6 @@ export default function MainApp() {
 
   const [autoGfrMort, setAutoGfrMort] = useState(false);
   const [gfrParamsMort, setGfrParamsMort] = useState({ scr: '', age: '', gender: 'L' });
-  const kreatininOptions = Array.from({ length: 150 }, (_, i) => ((i + 1) / 10).toFixed(1));
-  const usiaOptions = Array.from({ length: 83 }, (_, i) => i + 18);
 
   useEffect(() => {
     if (autoGfrMort && gfrParamsMort.scr && gfrParamsMort.age) {
@@ -49,7 +49,9 @@ export default function MainApp() {
     }
   }, [autoCtpMort, skorCtpMort?.kelas, ctpParamsMort.encephalopathy]);
 
-  // LOS STATE
+  // ==========================================
+  // 2. LOS STATE
+  // ==========================================
   const [formDataLos, setFormDataLos] = useState({
     komor_sepsis: 0, komp_eh: 0, ctp_encoded: 1,
     bilirubin_baseline: '', kreatinin_baseline: '', inr_baseline: '', 
@@ -90,7 +92,9 @@ export default function MainApp() {
     }
   }, [autoCtpLos, skorCtpLos?.kelas, ctpParamsLos.encephalopathy]);
 
-  // DOSIS STATE
+  // ==========================================
+  // 3. DOSIS STATE
+  // ==========================================
   const [dosisData, setDosisData] = useState({
     gfr: '', ctp: 'A', map_value: '',
     ascites_refrakter: 0, hrs: 0, gagal_ginjal_akut: 0, sepsis_pneumonia: 0, ast_alt_tinggi: 0,
@@ -132,7 +136,9 @@ export default function MainApp() {
     }));
   };
 
+  // ==========================================
   // HANDLERS
+  // ==========================================
   const handlePredictMortalitas = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoadingMort(true);
@@ -214,13 +220,13 @@ export default function MainApp() {
     <div className="py-8 px-4 flex flex-col items-center animate-fade-in">
       <div className="flex flex-col md:flex-row gap-2 mb-6 max-w-5xl w-full">
         <button onClick={() => setActiveTab('mortalitas')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'mortalitas' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
-          AI Prediksi Mortalitas
+          📈 AI Prediksi Mortalitas
         </button>
         <button onClick={() => setActiveTab('los')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'los' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
-          AI Prediksi Lama Rawat
+          🏥 AI Prediksi Lama Rawat
         </button>
         <button onClick={() => setActiveTab('dosis')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'dosis' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
-          Rekomendasi Dosis Klinis
+          💊 Rekomendasi Dosis Klinis
         </button>
       </div>
 
@@ -266,10 +272,15 @@ export default function MainApp() {
                     </CtpCalculator>
                   </div>
                   
-                  {[ {id: 'urea_baseline', label: 'Urea Baseline (mg/dL)'}, {id: 'natrium_baseline', label: 'Natrium Baseline (mEq/L)'}, {id: 'inr_baseline', label: 'INR Baseline'}, {id: 'sgot_baseline', label: 'SGOT Baseline (U/L)'}].map((f) => (
+                  {[ 
+                    {id: 'urea_baseline', label: 'Urea Baseline (mg/dL)', ph: 'Contoh: 25.5'}, 
+                    {id: 'natrium_baseline', label: 'Natrium Baseline (mEq/L)', ph: 'Contoh: 138.0'}, 
+                    {id: 'inr_baseline', label: 'INR Baseline', ph: 'Contoh: 1.2'}, 
+                    {id: 'sgot_baseline', label: 'SGOT Baseline (U/L)', ph: 'Contoh: 45.5'}
+                  ].map((f) => (
                     <div key={f.id} className="space-y-2">
                       <label className="block text-sm font-bold text-gray-700">{f.label}</label>
-                      <input type="number" step="any" required className="w-full bg-white border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800" value={(formDataMort as any)[f.id]} onChange={(e) => setFormDataMort({...formDataMort, [f.id]: e.target.value})} />
+                      <input type="number" step="any" required className="w-full bg-white border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800" placeholder={f.ph} value={(formDataMort as any)[f.id]} onChange={(e) => setFormDataMort({...formDataMort, [f.id]: e.target.value})} />
                     </div>
                   ))}
 
@@ -285,17 +296,11 @@ export default function MainApp() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 bg-white rounded-xl border border-red-100 shadow-inner">
                         <div>
                           <label className="block text-xs font-bold text-gray-600 mb-1">Serum Kreatinin (mg/dL)</label>
-                          <select required={autoGfrMort} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white" value={gfrParamsMort.scr} onChange={e => setGfrParamsMort({...gfrParamsMort, scr: e.target.value})}>
-                            <option value="">-- Pilih --</option>
-                            {kreatininOptions.map(val => (<option key={val} value={val}>{val}</option>))}
-                          </select>
+                          <input type="number" step="any" required={autoGfrMort} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white" placeholder="Contoh: 1.1" value={gfrParamsMort.scr} onChange={e => setGfrParamsMort({...gfrParamsMort, scr: e.target.value})} />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-600 mb-1">Usia (Tahun)</label>
-                          <select required={autoGfrMort} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white" value={gfrParamsMort.age} onChange={e => setGfrParamsMort({...gfrParamsMort, age: e.target.value})}>
-                            <option value="">-- Pilih --</option>
-                            {usiaOptions.map(val => (<option key={val} value={val}>{val}</option>))}
-                          </select>
+                          <input type="number" step="any" required={autoGfrMort} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white" placeholder="Contoh: 45" value={gfrParamsMort.age} onChange={e => setGfrParamsMort({...gfrParamsMort, age: e.target.value})} />
                         </div>
                         <div>
                           <label className="block text-xs font-bold text-gray-600 mb-1">Jenis Kelamin</label>
@@ -307,7 +312,7 @@ export default function MainApp() {
                     )}
                     <input type="number" step="any" required 
                       className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoGfrMort ? 'bg-gray-100 text-red-900 font-bold cursor-not-allowed shadow-inner' : 'bg-white text-gray-900'}`}
-                      placeholder={autoGfrMort ? "Otomatis terkalkulasi..." : "Masukkan nilai GFR manual"}
+                      placeholder={autoGfrMort ? "Otomatis terkalkulasi..." : "Contoh: 85.5"}
                       value={formDataMort.gfr} readOnly={autoGfrMort} onChange={(e) => !autoGfrMort && setFormDataMort({...formDataMort, gfr: e.target.value})} />
                   </div>
                 </div>
@@ -357,15 +362,15 @@ export default function MainApp() {
                   </div>
                   
                   {[ 
-                    {id: 'usia', label: 'Usia (Tahun)'},
-                    {id: 'kreatinin_baseline', label: 'Kreatinin Baseline (mg/dL)'},
-                    {id: 'bilirubin_baseline', label: 'Bilirubin Baseline (mg/dL)'},
-                    {id: 'inr_baseline', label: 'INR Baseline'}, 
-                    {id: 'sgot_baseline', label: 'SGOT Baseline (U/L)'}
+                    {id: 'usia', label: 'Usia (Tahun)', ph: 'Contoh: 45'},
+                    {id: 'kreatinin_baseline', label: 'Kreatinin Baseline (mg/dL)', ph: 'Contoh: 1.1'},
+                    {id: 'bilirubin_baseline', label: 'Bilirubin Baseline (mg/dL)', ph: 'Contoh: 1.5'},
+                    {id: 'inr_baseline', label: 'INR Baseline', ph: 'Contoh: 1.2'}, 
+                    {id: 'sgot_baseline', label: 'SGOT Baseline (U/L)', ph: 'Contoh: 45.5'}
                   ].map((f) => (
                     <div key={f.id} className="space-y-2">
                       <label className="block text-sm font-bold text-gray-700">{f.label}</label>
-                      <input type="number" step="any" required className="w-full bg-white border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800" value={(formDataLos as any)[f.id]} onChange={(e) => setFormDataLos({...formDataLos, [f.id]: e.target.value})} />
+                      <input type="number" step="any" required className="w-full bg-white border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800" placeholder={f.ph} value={(formDataLos as any)[f.id]} onChange={(e) => setFormDataLos({...formDataLos, [f.id]: e.target.value})} />
                     </div>
                   ))}
 
@@ -393,7 +398,7 @@ export default function MainApp() {
 
                     <input type="number" step="any" required 
                       className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoGfrLos ? 'bg-gray-100 text-red-900 font-bold cursor-not-allowed shadow-inner' : 'bg-white text-gray-900'}`}
-                      placeholder={autoGfrLos ? "Otomatis terkalkulasi..." : "Masukkan nilai GFR manual"}
+                      placeholder={autoGfrLos ? "Otomatis terkalkulasi..." : "Contoh: 85.5"}
                       value={formDataLos.gfr} 
                       readOnly={autoGfrLos}
                       onChange={(e) => !autoGfrLos && setFormDataLos({...formDataLos, gfr: e.target.value})} />
@@ -472,11 +477,11 @@ export default function MainApp() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1">Nilai GFR / CrCl (mL/min)</label>
-                    <input type="number" step="any" required className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.gfr} onChange={(e) => setDosisData({...dosisData, gfr: e.target.value})} />
+                    <input type="number" step="any" required className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" placeholder="Contoh: 85.5" value={dosisData.gfr} onChange={(e) => setDosisData({...dosisData, gfr: e.target.value})} />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-700 mb-1">MAP (mmHg) - Opsional</label>
-                    <input type="number" step="any" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" value={dosisData.map_value} onChange={(e) => setDosisData({...dosisData, map_value: e.target.value})} />
+                    <input type="number" step="any" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" placeholder="Contoh: 80.5" value={dosisData.map_value} onChange={(e) => setDosisData({...dosisData, map_value: e.target.value})} />
                   </div>
                 </div>
 
@@ -563,6 +568,7 @@ export default function MainApp() {
         )}
       </div>
 
+      {/* Modal Result Mortalitas */}
       {showModalMort && predictionMort !== null && (
           <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
@@ -581,6 +587,7 @@ export default function MainApp() {
           </div>
       )}
 
+      {/* Modal Result LoS */}
       {showModalLos && predictionLos !== null && (
           <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
