@@ -214,13 +214,13 @@ export default function MainApp() {
     <div className="py-8 px-4 flex flex-col items-center animate-fade-in">
       <div className="flex flex-col md:flex-row gap-2 mb-6 max-w-5xl w-full">
         <button onClick={() => setActiveTab('mortalitas')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'mortalitas' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
-          📈 AI Prediksi Mortalitas
+          AI Prediksi Mortalitas
         </button>
         <button onClick={() => setActiveTab('los')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'los' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
-          🏥 AI Prediksi Lama Rawat
+          AI Prediksi Lama Rawat
         </button>
         <button onClick={() => setActiveTab('dosis')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'dosis' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
-          💊 Rekomendasi Dosis Klinis
+          Rekomendasi Dosis Klinis
         </button>
       </div>
 
