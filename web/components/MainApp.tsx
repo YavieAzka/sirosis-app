@@ -1,5 +1,6 @@
 // File: components/MainApp.tsx
 import React, { useState, useEffect } from 'react';
+import { ChevronDown, HeartPulse, Hospital, Pill } from 'lucide-react';
 import { CtpParams, hitungSkorCtp, hitungGfrCkdEpi } from '../utils/clinical';
 import CtpCalculator from './CtpCalculator';
 
@@ -255,14 +256,48 @@ export default function MainApp() {
 
   return (
     <div className="py-8 px-4 flex flex-col items-center animate-fade-in">
+      {/* TABS HEADER */}
       <div className="flex flex-col md:flex-row gap-2 mb-6 max-w-5xl w-full">
-        <button onClick={() => setActiveTab('mortalitas')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'mortalitas' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
+        
+        {/* Tab 1: Mortalitas */}
+        <button 
+          type="button"
+          onClick={() => setActiveTab('mortalitas')} 
+          className={`group flex-1 flex items-center justify-center gap-2 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all duration-300 active:scale-95 ${
+            activeTab === 'mortalitas' 
+              ? 'bg-red-900 text-white shadow-lg' 
+              : 'bg-white text-gray-500 hover:bg-red-50 hover:text-red-900 border border-gray-200 border-b-0'
+          }`}
+        >
+          <HeartPulse className={`w-5 h-5 pointer-events-none transition-transform duration-300 ${activeTab === 'mortalitas' ? 'animate-pulse' : 'group-hover:scale-125'}`} />
           AI Prediksi Mortalitas
         </button>
-        <button onClick={() => setActiveTab('los')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'los' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
+
+        {/* Tab 2: Lama Rawat */}
+        <button 
+          type="button"
+          onClick={() => setActiveTab('los')} 
+          className={`group flex-1 flex items-center justify-center gap-2 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all duration-300 active:scale-95 ${
+            activeTab === 'los' 
+              ? 'bg-red-900 text-white shadow-lg' 
+              : 'bg-white text-gray-500 hover:bg-red-50 hover:text-red-900 border border-gray-200 border-b-0'
+          }`}
+        >
+          <Hospital className={`w-5 h-5 pointer-events-none transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-110`} />
           AI Prediksi Lama Rawat
         </button>
-        <button onClick={() => setActiveTab('dosis')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'dosis' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
+
+        {/* Tab 3: Dosis Obat */}
+        <button 
+          type="button"
+          onClick={() => setActiveTab('dosis')} 
+          className={`group flex-1 flex items-center justify-center gap-2 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all duration-300 active:scale-95 ${
+            activeTab === 'dosis' 
+              ? 'bg-red-900 text-white shadow-lg' 
+              : 'bg-white text-gray-500 hover:bg-red-50 hover:text-red-900 border border-gray-200 border-b-0'
+          }`}
+        >
+          <Pill className={`w-5 h-5 pointer-events-none transition-transform duration-300 group-hover:rotate-45 group-hover:scale-110`} />
           Rekomendasi Dosis Klinis
         </button>
       </div>
@@ -626,10 +661,14 @@ export default function MainApp() {
                 {/* Tombol Toggle SHAP Detail */}
                 <button 
                   onClick={() => setShowDetailsMort(!showDetailsMort)} 
-                  className="w-full text-center text-sm font-bold text-gray-500 hover:text-red-800 mb-6 flex justify-center items-center gap-1 transition-colors"
+                  className="w-full text-center text-sm font-bold text-gray-500 hover:text-red-800 mb-6 flex justify-center items-center gap-1.5 transition-colors"
                 >
                   {showDetailsMort ? 'Sembunyikan Analisis Klinis (SHAP)' : 'Lihat Detail Analisis Klinis AI'}
-                  <span className="text-xs">{showDetailsMort ? '▲' : '▼'}</span>
+                  
+                  <ChevronDown 
+                    className={`w-4 h-4 transition-transform duration-300 ${showDetailsMort ? 'rotate-180' : ''}`} 
+                    strokeWidth={2.5} 
+                  />
                 </button>
 
                 {/* Panel Detail SHAP (Explainable AI) */}
