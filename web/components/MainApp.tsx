@@ -166,6 +166,8 @@ export default function MainApp() {
   const handlePredictMortalitas = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoadingMort(true);
+    setShowDetailsMort(false); // Reset detail saat hitung ulang
+    
     const payload = { ...formDataMort, 
       komor_sepsis: Number(formDataMort.komor_sepsis), urea_baseline: Number(formDataMort.urea_baseline),
       natrium_baseline: Number(formDataMort.natrium_baseline), komp_eh: Number(formDataMort.komp_eh),
@@ -176,10 +178,21 @@ export default function MainApp() {
     try {
       const res = await fetch('/api/predict', { method: 'POST', body: JSON.stringify(payload) });
       const data = await res.json();
-      if (data.probability !== undefined) { setPredictionMort(data.probability); setShowModalMort(true); } 
-      else { alert(data.error || 'Terjadi kesalahan internal.'); }
-    } catch (error) { alert('Gagal menghubungi server AI.'); } 
-    finally { setLoadingMort(false); }
+      
+      if (data.probability !== undefined) { 
+        // PERBAIKAN: Gunakan setResultMort(data) agar seluruh objek (termasuk SHAP) tersimpan
+        setResultMort(data); 
+        setShowModalMort(true); 
+      } 
+      else { 
+        alert(data.error || 'Terjadi kesalahan internal.'); 
+      }
+    } catch (error) { 
+      alert('Gagal menghubungi server AI.'); 
+    } 
+    finally { 
+      setLoadingMort(false); 
+    }
   };
 
   const handlePredictLos = async (e: React.FormEvent) => {
