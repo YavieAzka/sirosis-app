@@ -3,6 +3,28 @@ import React, { useState, useEffect } from 'react';
 import { CtpParams, hitungSkorCtp, hitungGfrCkdEpi } from '../utils/clinical';
 import CtpCalculator from './CtpCalculator';
 
+// ==========================================
+// TIPE DATA SHAP & HASIL PREDIKSI
+// ==========================================
+type ShapContribution = { feature: string; contribution: number; value_input: number };
+type PredictionResultMort = { 
+  probability: number; 
+  predicted_class: number; 
+  base_value: number; 
+  shap_contributions: ShapContribution[] 
+};
+
+const FEATURE_LABELS: Record<string, string> = {
+  komor_sepsis: 'Sepsis',
+  urea_baseline: 'Urea Baseline',
+  natrium_baseline: 'Natrium Baseline',
+  komp_eh: 'Ensefalopati Hepatikum',
+  inr_baseline: 'INR',
+  sgot_baseline: 'SGOT Baseline',
+  gfr: 'GFR (CKD-EPI)',
+  ctp_encoded: 'Kelas CTP'
+};
+
 export default function MainApp() {
   const [activeTab, setActiveTab] = useState<'mortalitas' | 'los' | 'dosis'>('mortalitas');
 
@@ -14,8 +36,10 @@ export default function MainApp() {
     komp_eh: 0, inr_baseline: '', sgot_baseline: '', gfr: '', ctp_encoded: 1,
   });
   const [loadingMort, setLoadingMort] = useState(false);
+  const [resultMort, setResultMort] = useState<PredictionResultMort | null>(null);
   const [predictionMort, setPredictionMort] = useState<number | null>(null);
   const [showModalMort, setShowModalMort] = useState(false);
+  const [showDetailsMort, setShowDetailsMort] = useState(false);
   const [savingMort, setSavingMort] = useState(false);
 
   const [autoGfrMort, setAutoGfrMort] = useState(false);
@@ -220,13 +244,13 @@ export default function MainApp() {
     <div className="py-8 px-4 flex flex-col items-center animate-fade-in">
       <div className="flex flex-col md:flex-row gap-2 mb-6 max-w-5xl w-full">
         <button onClick={() => setActiveTab('mortalitas')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'mortalitas' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
-          📈 AI Prediksi Mortalitas
+          AI Prediksi Mortalitas
         </button>
         <button onClick={() => setActiveTab('los')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'los' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
-          🏥 AI Prediksi Lama Rawat
+          AI Prediksi Lama Rawat
         </button>
         <button onClick={() => setActiveTab('dosis')} className={`flex-1 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all ${activeTab === 'dosis' ? 'bg-red-900 text-white shadow-lg' : 'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200 border-b-0'}`}>
-          💊 Rekomendasi Dosis Klinis
+          Rekomendasi Dosis Klinis
         </button>
       </div>
 
@@ -569,18 +593,70 @@ export default function MainApp() {
       </div>
 
       {/* Modal Result Mortalitas */}
-      {showModalMort && predictionMort !== null && (
-          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
-              <div className="bg-red-900 p-5 text-center"><h2 className="text-xl font-bold text-white">Laporan Hasil AI</h2></div>
+      {showModalMort && resultMort !== null && (
+          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden my-8 border border-gray-100">
+              <div className="bg-red-900 p-5 text-center"><h2 className="text-xl font-bold text-white tracking-wide">Laporan Keputusan AI</h2></div>
+              
               <div className="p-8">
-                <div className={`text-center py-8 rounded-2xl mb-6 border ${predictionMort >= 0.4 ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'}`}>
-                  <p className="text-gray-600 font-semibold mb-2">Probabilitas Kematian</p>
-                  <p className={`text-6xl font-black tracking-tight ${predictionMort >= 0.4 ? 'text-red-700' : 'text-emerald-600'}`}>{(predictionMort * 100).toFixed(1)}<span className="text-4xl">%</span></p>
+                {/* Visualisasi Probabilitas Final */}
+                <div className={`text-center py-8 rounded-2xl mb-6 border shadow-inner ${resultMort.probability >= 0.4 ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'}`}>
+                  <p className="text-gray-600 font-bold mb-2 uppercase tracking-widest text-xs">Probabilitas Kematian</p>
+                  <p className={`text-6xl font-black tracking-tight mb-2 ${resultMort.probability >= 0.4 ? 'text-red-700' : 'text-emerald-600'}`}>
+                    {(resultMort.probability * 100).toFixed(1)}<span className="text-4xl">%</span>
+                  </p>
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${resultMort.predicted_class === 1 ? 'bg-red-200 text-red-900' : 'bg-emerald-200 text-emerald-900'}`}>
+                    AI Label: {resultMort.predicted_class === 1 ? 'High Risk / Mortalitas' : 'Survive'}
+                  </span>
                 </div>
+                
+                {/* Tombol Toggle SHAP Detail */}
+                <button 
+                  onClick={() => setShowDetailsMort(!showDetailsMort)} 
+                  className="w-full text-center text-sm font-bold text-gray-500 hover:text-red-800 mb-6 flex justify-center items-center gap-1 transition-colors"
+                >
+                  {showDetailsMort ? 'Sembunyikan Analisis Klinis (SHAP)' : 'Lihat Detail Analisis Klinis AI'}
+                  <span className="text-xs">{showDetailsMort ? '▲' : '▼'}</span>
+                </button>
+
+                {/* Panel Detail SHAP (Explainable AI) */}
+                {showDetailsMort && (
+                  <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 animate-fade-in shadow-inner overflow-hidden">
+                    <div className="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                        <p className="font-extrabold text-gray-700 uppercase tracking-wider text-[10px]">Kontributor Risiko (Faktor Predominan)</p>
+                        <span className="text-[10px] font-mono bg-white px-1.5 py-0.5 rounded text-gray-500 border border-gray-200">SHAP.TreeExplainer</span>
+                    </div>
+                    
+                    <div className="p-4 space-y-3">
+                        {/* List SHAP Features */}
+                        {resultMort.shap_contributions.map((shap, idx) => {
+                           const isPositive = shap.contribution > 0;
+                           const impactValue = (Math.abs(shap.contribution) * 100).toFixed(1);
+                           const humanLabel = FEATURE_LABELS[shap.feature] || shap.feature;
+                           
+                           return (
+                             <div key={idx} className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+                               <div className="flex flex-col">
+                                  <span className="font-bold text-gray-800 text-sm">{humanLabel}</span>
+                                  <span className="text-xs text-gray-500 font-medium">Input pasien: <span className="font-mono bg-gray-100 px-1 rounded">{shap.value_input}</span></span>
+                               </div>
+                               <span className={`px-2.5 py-1 rounded text-xs font-black min-w-[60px] text-center border ${isPositive ? 'bg-red-50 text-red-700 border-red-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                                 {isPositive ? '+' : '-'}{impactValue}%
+                               </span>
+                             </div>
+                           );
+                        })}
+
+                        <div className="pt-3 mt-2 border-t border-gray-200 text-xs text-gray-500 leading-relaxed italic text-justify">
+                            <b>Cara Membaca:</b> Rata-rata dasar risiko mortalitas adalah <b>{(resultMort.base_value * 100).toFixed(1)}%</b>. Matriks di atas menjelaskan faktor klinis spesifik milik pasien ini yang menyebabkan probabilitas akhir menyimpang naik (merah) atau turun (hijau) dari rata-rata dasar tersebut.
+                        </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex gap-3">
-                  <button onClick={() => setShowModalMort(false)} className="flex-1 bg-white hover:bg-gray-50 border border-gray-300 py-3 rounded-xl font-bold">Tutup</button>
-                  <button onClick={handleSaveToDatabaseMort} disabled={savingMort} className="flex-1 bg-red-800 hover:bg-red-900 text-white py-3 rounded-xl font-bold">{savingMort ? 'Menyimpan...' : 'Simpan ke Database'}</button>
+                  <button onClick={() => setShowModalMort(false)} className="flex-1 bg-white hover:bg-gray-50 border border-gray-300 py-3 rounded-xl font-bold transition-colors">Tutup</button>
+                  <button onClick={handleSaveToDatabaseMort} disabled={savingMort} className="flex-1 bg-red-800 hover:bg-red-900 text-white py-3 rounded-xl font-bold shadow-md transition-all">{savingMort ? 'Menyimpan...' : 'Simpan ke Database'}</button>
                 </div>
               </div>
             </div>
