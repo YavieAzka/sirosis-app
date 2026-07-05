@@ -9,7 +9,6 @@ import numpy as np
 
 # 1. Load model di luar fungsi agar di-cache (Cold Start Optimization)
 base_dir = os.path.dirname(os.path.abspath(__file__))
-# Naik satu folder ke root, lalu masuk ke deployment
 model_path = os.path.join(base_dir, '..', 'deployment', 'model_rf_mortalitas_final.joblib')
 features_path = os.path.join(base_dir, '..', 'deployment', 'daftar_fitur_m1.joblib')
 
@@ -17,7 +16,7 @@ features_path = os.path.join(base_dir, '..', 'deployment', 'daftar_fitur_m1.jobl
 rf = joblib.load(model_path)
 features = joblib.load(features_path)
 
-# Inisialisasi SHAP Explainer menggunakan model yang sudah diload
+# Inisialisasi SHAP Explainer
 explainer = shap.TreeExplainer(rf)
 
 # 2. Vercel Serverless Handler
@@ -36,41 +35,51 @@ class handler(BaseHTTPRequestHandler):
             probabilitas = float(rf.predict_proba(df)[0][1])
             predicted_class = int(rf.predict(df)[0])
             
-            # Ekstraksi SHAP Values untuk local interpretability (1 Pasien)
+            # Ekstraksi SHAP Values
             shap_values = explainer.shap_values(df)
             
-            # Random Forest scikit-learn mengembalikan list: [shap_kelas_0, shap_kelas_1]
-            # Kita ambil indeks 1 (mortalitas) dan baris 0 (karena hanya 1 pasien)
+            # --- PERBAIKAN LOGIKA DIMENSI (ANTI-ERROR) ---
             if isinstance(shap_values, list):
+                # Format SHAP Lama (List of arrays)
                 patient_shap = shap_values[1][0]
+                base_val = explainer.expected_value[1]
                 
-                # Ambil base value untuk kelas 1
-                base_val = explainer.expected_value[1] 
-            else:
-                # Fallback jika bentuk model berbeda (seperti XGBoost)
-                patient_shap = shap_values[0]
-                base_val = explainer.expected_value
-                if isinstance(base_val, (list, np.ndarray)):
-                    base_val = base_val[0]
+            elif isinstance(shap_values, np.ndarray):
+                if len(shap_values.shape) == 3:
+                    # Format SHAP Baru (3D Array: [samples, features, classes])
+                    # Kita ambil: sample 0, semua fitur (:), kelas 1 (mortalitas)
+                    patient_shap = shap_values[0, :, 1]
+                    base_val = explainer.expected_value[1] if isinstance(explainer.expected_value, (list, np.ndarray)) else explainer.expected_value
+                else:
+                    # Format Fallback (XGBoost / Binary Mode: 2D Array [samples, features])
+                    patient_shap = shap_values[0]
+                    base_val = explainer.expected_value[1] if isinstance(explainer.expected_value, (list, np.ndarray)) and len(explainer.expected_value) > 1 else explainer.expected_value
+            
+            # Pengamanan Ekstra: Pastikan base_val adalah skalar tunggal
+            if isinstance(base_val, np.ndarray):
+                base_val = base_val.item() if base_val.size == 1 else base_val[0]
+            elif isinstance(base_val, list):
+                base_val = base_val[0]
+            # --------------------------------------------
 
             # Format nilai SHAP menjadi list of dictionary
             contributions = []
             for i, fname in enumerate(features):
                 contributions.append({
                     "feature": fname,
-                    "contribution": float(patient_shap[i]), # (+) mendorong ke kematian, (-) mencegah kematian
+                    "contribution": float(patient_shap[i]), # Karena pemotongan array sudah benar, array ini berisi skalar
                     "value_input": float(df.iloc[0, i])
                 })
 
             # Urutkan dari dampak (absolut) terbesar ke terkecil
             contributions = sorted(contributions, key=lambda x: abs(x['contribution']), reverse=True)
             
-            # Siapkan payload respons yang lebih kaya
+            # Siapkan payload respons
             response_payload = {
                 "probability": probabilitas,
                 "predicted_class": predicted_class,
                 "base_value": float(base_val),
-                "shap_contributions": contributions[:5]  # Ambil 5 faktor paling dominan saja untuk UI
+                "shap_contributions": contributions[:5] 
             }
             
             # Kirim respons sukses
