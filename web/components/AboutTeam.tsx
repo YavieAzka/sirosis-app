@@ -31,7 +31,7 @@ export default function AboutTeam() {
                 />
               </div>
               <h3 className="text-2xl font-extrabold text-gray-900 mb-1">
-                Serdiani
+                apt. Serdiani, S.Si, M.Farm
               </h3>
               <p className="text-red-800 font-bold text-xs uppercase tracking-widest mb-1">
                 Clinical Domain Expert
