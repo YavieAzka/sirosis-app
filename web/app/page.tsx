@@ -1,54 +1,159 @@
 // File: app/page.tsx
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MainApp from '../components/MainApp';
 import UserGuide from '../components/UserGuide';
 import Methodology from '../components/Methodology';
 import AboutTeam from '../components/AboutTeam';
 
+type ViewType = 'app' | 'guide' | 'methodology' | 'about';
+
 export default function Home() {
-  const [currentView, setCurrentView] = useState<'app' | 'guide' | 'methodology' | 'about'>('app');
+  const [currentView, setCurrentView] = useState<ViewType>('app');
+
+  // ==========================================
+  // STATE & REFS UNTUK SLIDING NAVBAR
+  // ==========================================
+  const desktopRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const mobileRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  
+  const [desktopIndicator, setDesktopIndicator] = useState({ left: 0, width: 0 });
+  const [mobileIndicator, setMobileIndicator] = useState({ left: 0, width: 0 });
+
+  useEffect(() => {
+    const updateIndicator = () => {
+      // Peta indeks untuk mencari tab mana yang sedang aktif
+      const viewToIndex: Record<string, number> = { app: 0, guide: 1, methodology: 2, about: 3 };
+      const index = viewToIndex[currentView];
+      
+      // Hitung posisi (left) dan lebar (width) untuk desktop
+      const desktopEl = desktopRefs.current[index];
+      if (desktopEl) {
+        setDesktopIndicator({ left: desktopEl.offsetLeft, width: desktopEl.offsetWidth });
+      }
+      
+      // Hitung posisi (left) dan lebar (width) untuk perangkat mobile (scrollable)
+      const mobileEl = mobileRefs.current[index];
+      if (mobileEl) {
+        setMobileIndicator({ left: mobileEl.offsetLeft, width: mobileEl.offsetWidth });
+      }
+    };
+
+    // Jalankan kalkulasi saat render awal dan saat menu ditekan
+    updateIndicator();
+    
+    // Dengarkan event resize layar agar garis tidak meleset saat ukuran browser diubah
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
+  }, [currentView]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-800">
+      
+      {/* =================================================================== */}
       {/* NAVBAR */}
+      {/* =================================================================== */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <div className="shrink-0 flex items-center cursor-pointer" onClick={() => setCurrentView('app')}>
+            <div className="flex items-center w-full">
+              
+              {/* Logo / Judul */}
+              <div 
+                className="shrink-0 flex items-center cursor-pointer mr-8" 
+                onClick={() => setCurrentView('app')}
+              >
                 <span className="text-2xl mr-2">🩺</span>
-                <span className="font-black text-red-900 text-xl tracking-tight">CirrhoSmart AI</span>
+                <span className="font-black text-red-900 text-xl tracking-tight">CDSS Hepatology</span>
               </div>
-              <div className="hidden md:ml-10 md:flex md:space-x-8">
-                <button onClick={() => setCurrentView('app')} className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold ${currentView === 'app' ? 'border-red-800 text-red-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} transition-colors`}>
+              
+              {/* Menu Desktop */}
+              <div className="hidden md:flex relative h-full">
+                <button 
+                  ref={el => { desktopRefs.current[0] = el; }} 
+                  onClick={() => setCurrentView('app')} 
+                  className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === 'app' ? 'text-red-900' : 'text-gray-500 hover:text-gray-800'}`}
+                >
                   Kalkulator Klinis
                 </button>
-                <button onClick={() => setCurrentView('guide')} className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold ${currentView === 'guide' ? 'border-red-800 text-red-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} transition-colors`}>
+                <button 
+                  ref={el => { desktopRefs.current[1] = el; }} 
+                  onClick={() => setCurrentView('guide')} 
+                  className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === 'guide' ? 'text-red-900' : 'text-gray-500 hover:text-gray-800'}`}
+                >
                   Panduan
                 </button>
-                <button onClick={() => setCurrentView('methodology')} className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold ${currentView === 'methodology' ? 'border-red-800 text-red-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} transition-colors`}>
+                <button 
+                  ref={el => { desktopRefs.current[2] = el; }} 
+                  onClick={() => setCurrentView('methodology')} 
+                  className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === 'methodology' ? 'text-red-900' : 'text-gray-500 hover:text-gray-800'}`}
+                >
                   Metodologi & Referensi
                 </button>
-                <button onClick={() => setCurrentView('about')} className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold ${currentView === 'about' ? 'border-red-800 text-red-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'} transition-colors`}>
+                <button 
+                  ref={el => { desktopRefs.current[3] = el; }} 
+                  onClick={() => setCurrentView('about')} 
+                  className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === 'about' ? 'text-red-900' : 'text-gray-500 hover:text-gray-800'}`}
+                >
                   Tim Peneliti
                 </button>
+
+                {/* Indikator Slider (Desktop) */}
+                <div 
+                  className="absolute bottom-0 h-0.5 bg-red-800 transition-all duration-300 ease-out" 
+                  style={{ left: desktopIndicator.left, width: desktopIndicator.width }} 
+                />
               </div>
+
             </div>
           </div>
         </div>
         
-        {/* Mobile menu */}
-        <div className="md:hidden flex overflow-x-auto border-t border-gray-100 bg-gray-50/50">
-           <button onClick={() => setCurrentView('app')} className={`px-4 py-3 text-xs font-bold whitespace-nowrap ${currentView === 'app' ? 'text-red-900 bg-white border-b-2 border-red-800' : 'text-gray-500'}`}>Kalkulator</button>
-           <button onClick={() => setCurrentView('guide')} className={`px-4 py-3 text-xs font-bold whitespace-nowrap ${currentView === 'guide' ? 'text-red-900 bg-white border-b-2 border-red-800' : 'text-gray-500'}`}>Panduan</button>
-           <button onClick={() => setCurrentView('methodology')} className={`px-4 py-3 text-xs font-bold whitespace-nowrap ${currentView === 'methodology' ? 'text-red-900 bg-white border-b-2 border-red-800' : 'text-gray-500'}`}>Metodologi</button>
-           <button onClick={() => setCurrentView('about')} className={`px-4 py-3 text-xs font-bold whitespace-nowrap ${currentView === 'about' ? 'text-red-900 bg-white border-b-2 border-red-800' : 'text-gray-500'}`}>Tim</button>
+        {/* Menu Mobile (Scrollable secara horizontal) */}
+        <div className="md:hidden overflow-x-auto border-t border-gray-100 bg-gray-50/80 backdrop-blur">
+          <div className="flex relative w-max min-w-full">
+            <button 
+              ref={el => { mobileRefs.current[0] = el; }} 
+              onClick={() => setCurrentView('app')} 
+              className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === 'app' ? 'text-red-900' : 'text-gray-500'}`}
+            >
+              Kalkulator
+            </button>
+            <button 
+              ref={el => { mobileRefs.current[1] = el; }} 
+              onClick={() => setCurrentView('guide')} 
+              className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === 'guide' ? 'text-red-900' : 'text-gray-500'}`}
+            >
+              Panduan
+            </button>
+            <button 
+              ref={el => { mobileRefs.current[2] = el; }} 
+              onClick={() => setCurrentView('methodology')} 
+              className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === 'methodology' ? 'text-red-900' : 'text-gray-500'}`}
+            >
+              Metodologi
+            </button>
+            <button 
+              ref={el => { mobileRefs.current[3] = el; }} 
+              onClick={() => setCurrentView('about')} 
+              className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === 'about' ? 'text-red-900' : 'text-gray-500'}`}
+            >
+              Tim
+            </button>
+
+            {/* Indikator Slider (Mobile) */}
+            <div 
+              className="absolute bottom-0 h-0.5 bg-red-800 transition-all duration-300 ease-out z-20" 
+              style={{ left: mobileIndicator.left, width: mobileIndicator.width }} 
+            />
+          </div>
         </div>
       </nav>
 
-      {/* MAIN CONTENT AREA */}
+      {/* =================================================================== */}
+      {/* KONTEN UTAMA */}
+      {/* =================================================================== */}
       <div className="flex-grow">
         {currentView === 'app' && <MainApp />}
         {currentView === 'guide' && <UserGuide />}
@@ -56,7 +161,9 @@ export default function Home() {
         {currentView === 'about' && <AboutTeam />}
       </div>
 
+      {/* =================================================================== */}
       {/* GLOBAL FOOTER & MEDICAL DISCLAIMER */}
+      {/* =================================================================== */}
       <footer className="bg-white border-t border-gray-200 mt-12">
         <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="bg-amber-50 rounded-xl p-6 border border-amber-200 mb-6 shadow-inner">
@@ -68,7 +175,7 @@ export default function Home() {
             </p>
           </div>
           <div className="text-center text-sm text-gray-500 font-medium">
-            <p>&copy; {new Date().getFullYear()} ChirroSmart AI Research Project. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} CDSS Hepatology Research Project. All rights reserved.</p>
           </div>
         </div>
       </footer>
