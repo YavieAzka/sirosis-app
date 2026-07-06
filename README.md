@@ -1,5 +1,5 @@
 
-# Clinical Decision Support System (CDSS) for Liver Cirrhosis
+# ChirroSmartAI - Clinical Decision Support System (CDSS) for Liver Cirrhosis
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)
