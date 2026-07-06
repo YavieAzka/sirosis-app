@@ -68,4 +68,4 @@ This project involved rigorous data science methodologies to handle real-world, 
 ## Authors
 
 * **Machine Learning Engineer & Full-Stack Developer:** Yavie Azka Putra Araly - Institut Teknologi Bandung (yavieazkaputra@gmail.com | yavieazka.space)
-* **Principal Clinical Researcher:** Serdiani - Universitas Andalas
+* **Principal Clinical Researcher:** Serdiani - Universitas Andalas (serdiani.farmasi1@gmail.com)
