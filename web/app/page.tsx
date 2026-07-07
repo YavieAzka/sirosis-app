@@ -64,8 +64,7 @@ export default function Home() {
                 className="shrink-0 flex items-center cursor-pointer mr-8" 
                 onClick={() => setCurrentView('app')}
               >
-                <span className="text-2xl mr-2">🩺</span>
-                <span className="font-black text-red-900 text-xl tracking-tight">CDSS Hepatology</span>
+                <span className="font-black text-red-900 text-xl tracking-tight">CirrhoSmartAI</span>
               </div>
               
               {/* Menu Desktop */}
@@ -175,7 +174,7 @@ export default function Home() {
             </p>
           </div>
           <div className="text-center text-sm text-gray-500 font-medium">
-            <p>&copy; {new Date().getFullYear()} CDSS Hepatology Research Project. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} CirrhoSmartAI Research Project. All rights reserved.</p>
           </div>
         </div>
       </footer>
