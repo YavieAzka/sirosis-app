@@ -11,9 +11,10 @@ const globalForPrisma = globalThis as unknown as {
 
 const getPrisma = () => {
   if (!globalForPrisma.prisma) {
+    // Kita cukup memberikan 'log' agar konfigurasinya "non-empty"
+    // Prisma akan otomatis memakai url = env("DATABASE_URL") dari skema
     globalForPrisma.prisma = new PrismaClient({
-      // Cara modern dan resmi Prisma untuk override koneksi database
-      datasourceUrl: process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL,
+      log: ['error', 'warn']
     });
   }
   return globalForPrisma.prisma;
