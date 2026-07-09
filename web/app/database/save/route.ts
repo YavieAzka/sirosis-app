@@ -11,7 +11,11 @@ const globalForPrisma = globalThis as unknown as {
 
 const getPrisma = () => {
   if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = new PrismaClient();
+    // Memberikan opsi 'log' sudah cukup untuk membuat konfigurasi menjadi "non-empty"
+    // Prisma akan otomatis mencari process.env.DATABASE_URL di latar belakang
+    globalForPrisma.prisma = new PrismaClient({
+      log: ['error', 'warn'] 
+    });
   }
   return globalForPrisma.prisma;
 }
@@ -35,27 +39,23 @@ export async function POST(request: Request) {
     // ==========================================
     // 2. FILTER & PENYESUAIAN SCHEMA (ANTI-CRASH)
     // ==========================================
-    // Membuang variabel dari frontend yang TIDAK ADA di schema database
     const { 
       token, 
       ctp_encoded, 
       probability, 
       probability_los,
-      // Helper kalkulator CTP dibuang agar tidak crash
       ctp_bilirubin, ctp_albumin, ctp_inr, ctp_ascites, ctp_eh, 
       ...patientData 
     } = body;
 
-    // MASALAH 1: Generate 'patient_id' secara otomatis (Karena schema meminta String @id)
-    // Format: PAT-Timestamp-RandomNumber
+    // Generate 'patient_id' otomatis
     patientData.patient_id = `PAT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    // MASALAH 2: Mengisi 'lama_rawat' jika kosong (Karena schema meminta Int non-nullable)
+    // Mengisi 'lama_rawat' dengan default 0 agar tidak error jika form kosong
     if (patientData.lama_rawat === undefined || patientData.lama_rawat === null) {
       patientData.lama_rawat = 0; 
     }
 
-    // (Opsional) Konversi ctp_encoded menjadi string 'A', 'B', 'C' untuk kolom 'ctp' di database
     if (ctp_encoded === 1) patientData.ctp = 'A';
     if (ctp_encoded === 2) patientData.ctp = 'B';
     if (ctp_encoded === 3) patientData.ctp = 'C';
