@@ -4,13 +4,10 @@ export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
-// Gunakan global object untuk menyimpan koneksi agar tidak terus-menerus
-// membuat koneksi baru saat fungsi dipanggil berulang kali (Singleton Pattern)
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-// Fungsi ini MENCEGAH Prisma dipanggil saat proses build Vercel
 const getPrisma = () => {
   if (!globalForPrisma.prisma) {
     globalForPrisma.prisma = new PrismaClient();
@@ -20,11 +17,24 @@ const getPrisma = () => {
 
 export async function POST(request: Request) {
   try {
-    // 1. Inisialisasi Prisma HANYA saat ada request POST masuk (Runtime)
-    const prisma = getPrisma();
-
     const body = await request.json();
+
+    // ==========================================
+    // SISTEM KEAMANAN & ANTI-INJEKSI
+    // ==========================================
+    const validToken = process.env.SAVE_TOKEN;
     
+    // Pengecekan komparasi identitas absolut (===)
+    // Mustahil di-bypass menggunakan injeksi string
+    if (!validToken || body.token !== validToken) {
+      return NextResponse.json(
+        { error: 'Akses Ditolak: Token otorisasi tidak valid atau kosong.' }, 
+        { status: 401 }
+      );
+    }
+    // ==========================================
+
+    const prisma = getPrisma();
     // Konversi CTP dari angka (1/2/3) menjadi huruf (A/B/C) sesuai skema
     const ctpMap: { [key: number]: string } = { 1: 'A', 2: 'B', 3: 'C' };
     const ctpString = ctpMap[body.ctp_encoded] || 'A';

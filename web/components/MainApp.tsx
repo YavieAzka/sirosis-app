@@ -28,6 +28,9 @@ const FEATURE_LABELS: Record<string, string> = {
 
 export default function MainApp() {
   const [activeTab, setActiveTab] = useState<'mortalitas' | 'los' | 'dosis'>('mortalitas');
+  
+  // STATE GLOBAL UNTUK TOKEN OTORISASI DATABASE
+  const [tokenInput, setTokenInput] = useState('');
 
   // ==========================================
   // 1. MORTALITAS STATE
@@ -144,7 +147,6 @@ export default function MainApp() {
     }
   }, [autoCtpDosis, skorCtpDosis?.kelas]);
 
-  // State Kalkulator GFR Dosis
   const [autoGfrDosis, setAutoGfrDosis] = useState(false);
   const [gfrParamsDosis, setGfrParamsDosis] = useState({ scr: '', age: '', gender: 'L' });
 
@@ -153,13 +155,11 @@ export default function MainApp() {
       const scr = parseFloat(gfrParamsDosis.scr);
       const age = parseFloat(gfrParamsDosis.age);
       if (!isNaN(scr) && !isNaN(age) && scr > 0 && age > 0) {
-        // Menggunakan utilitas yang sama agar bersih dan konsisten
         setDosisData(prev => ({ ...prev, gfr: hitungGfrCkdEpi(scr, age, gfrParamsDosis.gender as 'L'|'P') }));
       }
     }
   }, [autoGfrDosis, gfrParamsDosis.scr, gfrParamsDosis.age, gfrParamsDosis.gender]);
 
-  // State Kalkulator MAP Dosis
   const [autoMapDosis, setAutoMapDosis] = useState(false);
   const [mapParamsDosis, setMapParamsDosis] = useState({ sbp: '', dbp: '' });
 
@@ -264,22 +264,50 @@ export default function MainApp() {
   };
 
   const handleSaveToDatabaseMort = async () => {
+    if (!tokenInput) {
+      alert("Masukkan Token Rahasia terlebih dahulu!");
+      return;
+    }
     setSavingMort(true);
     try {
-      await fetch('/database/save', { method: 'POST', body: JSON.stringify({...formDataMort, probability: predictionMort}) });
-      alert('Data Mortalitas berhasil disimpan ke Supabase!');
-      setShowModalMort(false);
-    } catch (error) { alert('Gagal menyimpan ke database.'); } 
+      const res = await fetch('/database/save', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({...formDataMort, probability: resultMort?.probability, token: tokenInput}) 
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('Data Mortalitas berhasil disimpan ke Supabase!');
+        setShowModalMort(false);
+        setTokenInput(''); // Reset token setelah berhasil
+      } else {
+        alert(data.error || 'Gagal menyimpan. Pastikan token benar.');
+      }
+    } catch (error) { alert('Gagal menghubungi database.'); } 
     finally { setSavingMort(false); }
   };
 
   const handleSaveToDatabaseLos = async () => {
+    if (!tokenInput) {
+      alert("Masukkan Token Rahasia terlebih dahulu!");
+      return;
+    }
     setSavingLos(true);
     try {
-      await fetch('/database/save', { method: 'POST', body: JSON.stringify({...formDataLos, probability_los: predictionLos}) });
-      alert('Data LoS berhasil disimpan ke Supabase!');
-      setShowModalLos(false);
-    } catch (error) { alert('Gagal menyimpan ke database.'); } 
+      const res = await fetch('/database/save', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({...formDataLos, probability_los: predictionLos, token: tokenInput}) 
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('Data LoS berhasil disimpan ke Supabase!');
+        setShowModalLos(false);
+        setTokenInput(''); // Reset token setelah berhasil
+      } else {
+        alert(data.error || 'Gagal menyimpan. Pastikan token benar.');
+      }
+    } catch (error) { alert('Gagal menghubungi database.'); } 
     finally { setSavingLos(false); }
   };
 
@@ -288,7 +316,6 @@ export default function MainApp() {
       {/* TABS HEADER */}
       <div className="flex flex-col md:flex-row gap-2 mb-6 max-w-5xl w-full">
         
-        {/* Tab 1: Mortalitas */}
         <button 
           type="button"
           onClick={() => setActiveTab('mortalitas')} 
@@ -302,7 +329,6 @@ export default function MainApp() {
           AI Prediksi Mortalitas
         </button>
 
-        {/* Tab 2: Lama Rawat */}
         <button 
           type="button"
           onClick={() => setActiveTab('los')} 
@@ -316,7 +342,6 @@ export default function MainApp() {
           AI Prediksi Lama Rawat
         </button>
 
-        {/* Tab 3: Dosis Obat */}
         <button 
           type="button"
           onClick={() => setActiveTab('dosis')} 
@@ -575,58 +600,15 @@ export default function MainApp() {
                   </div>
                 </div>
 
-                {/* Kalkulator GFR Dosis */}
-                <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm mt-4">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
-                    <label className="text-sm font-bold text-gray-700">Nilai GFR / CrCl (mL/min)</label>
-                    <label className="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
-                      <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={autoGfrDosis} onChange={(e) => setAutoGfrDosis(e.target.checked)} />
-                      <span className="text-xs font-bold text-red-900">Hitung Otomatis (CKD-EPI)</span>
-                    </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Nilai GFR / CrCl (mL/min)</label>
+                    <input type="number" step="any" required className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" placeholder="Contoh: 85.5" value={dosisData.gfr} onChange={(e) => setDosisData({...dosisData, gfr: e.target.value})} />
                   </div>
-                  {autoGfrDosis && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 p-4 bg-white rounded-xl border border-red-100 shadow-inner">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-600 mb-1">S. Kreatinin</label>
-                        <input type="number" step="any" required={autoGfrDosis} className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-red-800" value={gfrParamsDosis.scr} onChange={e => setGfrParamsDosis({...gfrParamsDosis, scr: e.target.value})} />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-gray-600 mb-1">Usia</label>
-                        <input type="number" required={autoGfrDosis} className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-red-800" value={gfrParamsDosis.age} onChange={e => setGfrParamsDosis({...gfrParamsDosis, age: e.target.value})} />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-gray-600 mb-1">Kelamin</label>
-                        <select className="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white focus:ring-2 focus:ring-red-800" value={gfrParamsDosis.gender} onChange={e => setGfrParamsDosis({...gfrParamsDosis, gender: e.target.value})}>
-                          <option value="L">L</option><option value="P">P</option>
-                        </select>
-                      </div>
-                    </div>
-                  )}
-                  <input type="number" step="any" required className={`w-full border border-gray-300 rounded-lg p-2.5 text-sm ${autoGfrDosis ? 'bg-gray-100 text-red-900 font-bold' : 'bg-white'}`} placeholder={autoGfrDosis ? "Otomatis terkalkulasi..." : "Manual (Contoh: 85.5)"} value={dosisData.gfr} readOnly={autoGfrDosis} onChange={(e) => !autoGfrDosis && setDosisData({...dosisData, gfr: e.target.value})} />
-                </div>
-
-                {/* Kalkulator MAP Dosis */}
-                <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm mt-4">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
-                    <label className="text-sm font-bold text-gray-700">MAP / Mean Arterial Pressure (mmHg)</label>
-                    <label className="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
-                      <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={autoMapDosis} onChange={(e) => setAutoMapDosis(e.target.checked)} />
-                      <span className="text-xs font-bold text-red-900">Hitung Otomatis</span>
-                    </label>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">MAP (mmHg) - Opsional</label>
+                    <input type="number" step="any" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" placeholder="Contoh: 80.5" value={dosisData.map_value} onChange={(e) => setDosisData({...dosisData, map_value: e.target.value})} />
                   </div>
-                  {autoMapDosis && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-white rounded-xl border border-red-100 shadow-inner">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-600 mb-1">Sistolik (SBP)</label>
-                        <input type="number" step="any" required={autoMapDosis} className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-red-800" placeholder="Contoh: 120" value={mapParamsDosis.sbp} onChange={e => setMapParamsDosis({...mapParamsDosis, sbp: e.target.value})} />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-gray-600 mb-1">Diastolik (DBP)</label>
-                        <input type="number" step="any" required={autoMapDosis} className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-red-800" placeholder="Contoh: 80" value={mapParamsDosis.dbp} onChange={e => setMapParamsDosis({...mapParamsDosis, dbp: e.target.value})} />
-                      </div>
-                    </div>
-                  )}
-                  <input type="number" step="any" className={`w-full border border-gray-300 rounded-lg p-2.5 text-sm ${autoMapDosis ? 'bg-gray-100 text-red-900 font-bold' : 'bg-white'}`} placeholder={autoMapDosis ? "Otomatis terkalkulasi..." : "Manual (Opsional)"} value={dosisData.map_value} readOnly={autoMapDosis} onChange={(e) => !autoMapDosis && setDosisData({...dosisData, map_value: e.target.value})} />
                 </div>
 
                 <CtpCalculator active={autoCtpDosis} onToggle={setAutoCtpDosis} params={ctpParamsDosis} onChangeParam={(key, value) => setCtpParamsDosis(prev => ({ ...prev, [key]: value }))} hasil={skorCtpDosis}>
@@ -752,7 +734,6 @@ export default function MainApp() {
                     </div>
                     
                     <div className="p-4 space-y-3">
-                        {/* List SHAP Features */}
                         {resultMort.shap_contributions.map((shap, idx) => {
                            const isPositive = shap.contribution > 0;
                            const impactValue = (Math.abs(shap.contribution) * 100).toFixed(1);
@@ -770,16 +751,24 @@ export default function MainApp() {
                              </div>
                            );
                         })}
-
-                        <div className="pt-3 mt-2 border-t border-gray-200 text-xs text-gray-500 leading-relaxed italic text-justify">
-                            <b>Cara Membaca:</b> Rata-rata dasar risiko mortalitas adalah <b>{(resultMort.base_value * 100).toFixed(1)}%</b>. Matriks di atas menjelaskan faktor klinis spesifik milik pasien ini yang menyebabkan probabilitas akhir menyimpang naik (merah) atau turun (hijau) dari rata-rata dasar tersebut.
-                        </div>
                     </div>
                   </div>
                 )}
 
+                {/* INPUT OTORISASI TOKEN */}
+                <div className="mb-5 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wider text-center">Otorisasi Simpan Data</label>
+                  <input 
+                    type="password" 
+                    placeholder="Masukkan Token Rahasia" 
+                    className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 text-center tracking-widest bg-white"
+                    value={tokenInput}
+                    onChange={(e) => setTokenInput(e.target.value)}
+                  />
+                </div>
+
                 <div className="flex gap-3">
-                  <button onClick={() => setShowModalMort(false)} className="flex-1 bg-white hover:bg-gray-50 border border-gray-300 py-3 rounded-xl font-bold transition-colors">Tutup</button>
+                  <button onClick={() => {setShowModalMort(false); setTokenInput('');}} className="flex-1 bg-white hover:bg-gray-50 border border-gray-300 py-3 rounded-xl font-bold transition-colors">Tutup</button>
                   <button onClick={handleSaveToDatabaseMort} disabled={savingMort} className="flex-1 bg-red-800 hover:bg-red-900 text-white py-3 rounded-xl font-bold shadow-md transition-all">{savingMort ? 'Menyimpan...' : 'Simpan ke Database'}</button>
                 </div>
               </div>
@@ -790,16 +779,29 @@ export default function MainApp() {
       {/* Modal Result LoS */}
       {showModalLos && predictionLos !== null && (
           <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
-              <div className="bg-red-900 p-5 text-center"><h2 className="text-xl font-bold text-white">Laporan Prediksi Lama Rawat</h2></div>
+            <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-gray-100">
+              <div className="bg-red-900 p-5 text-center"><h2 className="text-xl font-bold text-white tracking-wide">Laporan Prediksi Lama Rawat</h2></div>
               <div className="p-8">
-                <div className={`text-center py-8 rounded-2xl mb-6 border ${predictionLos >= 0.5 ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}`}>
-                  <p className="text-gray-600 font-semibold mb-2">Risiko Rawat Inap &gt; 7 Hari</p>
+                <div className={`text-center py-8 rounded-2xl mb-6 border shadow-inner ${predictionLos >= 0.5 ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}`}>
+                  <p className="text-gray-600 font-semibold mb-2 uppercase tracking-widest text-xs">Risiko Rawat Inap &gt; 7 Hari</p>
                   <p className={`text-6xl font-black tracking-tight ${predictionLos >= 0.5 ? 'text-amber-700' : 'text-blue-600'}`}>{(predictionLos * 100).toFixed(1)}<span className="text-4xl">%</span></p>
                 </div>
+
+                {/* INPUT OTORISASI TOKEN */}
+                <div className="mb-5 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wider text-center">Otorisasi Simpan Data</label>
+                  <input 
+                    type="password" 
+                    placeholder="Masukkan Token Rahasia" 
+                    className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 text-center tracking-widest bg-white"
+                    value={tokenInput}
+                    onChange={(e) => setTokenInput(e.target.value)}
+                  />
+                </div>
+
                 <div className="flex gap-3">
-                  <button onClick={() => setShowModalLos(false)} className="flex-1 bg-white hover:bg-gray-50 border border-gray-300 py-3 rounded-xl font-bold">Tutup</button>
-                  <button onClick={handleSaveToDatabaseLos} disabled={savingLos} className="flex-1 bg-red-800 hover:bg-red-900 text-white py-3 rounded-xl font-bold">{savingLos ? 'Menyimpan...' : 'Simpan ke Database'}</button>
+                  <button onClick={() => {setShowModalLos(false); setTokenInput('');}} className="flex-1 bg-white hover:bg-gray-50 border border-gray-300 py-3 rounded-xl font-bold transition-colors">Tutup</button>
+                  <button onClick={handleSaveToDatabaseLos} disabled={savingLos} className="flex-1 bg-red-800 hover:bg-red-900 text-white py-3 rounded-xl font-bold shadow-md transition-all">{savingLos ? 'Menyimpan...' : 'Simpan ke Database'}</button>
                 </div>
               </div>
             </div>
