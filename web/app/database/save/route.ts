@@ -1,9 +1,11 @@
-// File: app/database/save/route.ts
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+// TAMBAHAN BARU: Import driver Postgres
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
@@ -11,11 +13,17 @@ const globalForPrisma = globalThis as unknown as {
 
 const getPrisma = () => {
   if (!globalForPrisma.prisma) {
-    // Kita cukup memberikan 'log' agar konfigurasinya "non-empty"
-    // Prisma akan otomatis memakai url = env("DATABASE_URL") dari skema
-    globalForPrisma.prisma = new PrismaClient({
-      log: ['error', 'warn']
-    });
+    // 1. Ambil URL Database
+    const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL;
+    
+    // 2. Buat Connection Pool PostgreSQL
+    const pool = new Pool({ connectionString });
+    
+    // 3. Masukkan ke dalam Prisma Adapter
+    const adapter = new PrismaPg(pool);
+    
+    // 4. Inisialisasi Prisma dengan Adapter (Wajib di Prisma versi terbaru)
+    globalForPrisma.prisma = new PrismaClient({ adapter });
   }
   return globalForPrisma.prisma;
 }
