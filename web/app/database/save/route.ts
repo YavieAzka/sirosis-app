@@ -1,3 +1,4 @@
+// File: app/database/save/route.ts
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -20,46 +21,61 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     // ==========================================
-    // SISTEM KEAMANAN & ANTI-INJEKSI
+    // 1. VALIDASI TOKEN OTORISASI
     // ==========================================
     const validToken = process.env.SAVE_TOKEN;
     
-    // Pengecekan komparasi identitas absolut (===)
-    // Mustahil di-bypass menggunakan injeksi string
     if (!validToken || body.token !== validToken) {
       return NextResponse.json(
         { error: 'Akses Ditolak: Token otorisasi tidak valid atau kosong.' }, 
         { status: 401 }
       );
     }
+
     // ==========================================
+    // 2. FILTER & PENYESUAIAN SCHEMA (ANTI-CRASH)
+    // ==========================================
+    // Membuang variabel dari frontend yang TIDAK ADA di schema database
+    const { 
+      token, 
+      ctp_encoded, 
+      probability, 
+      probability_los,
+      // Helper kalkulator CTP dibuang agar tidak crash
+      ctp_bilirubin, ctp_albumin, ctp_inr, ctp_ascites, ctp_eh, 
+      ...patientData 
+    } = body;
 
+    // MASALAH 1: Generate 'patient_id' secara otomatis (Karena schema meminta String @id)
+    // Format: PAT-Timestamp-RandomNumber
+    patientData.patient_id = `PAT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    // MASALAH 2: Mengisi 'lama_rawat' jika kosong (Karena schema meminta Int non-nullable)
+    if (patientData.lama_rawat === undefined || patientData.lama_rawat === null) {
+      patientData.lama_rawat = 0; 
+    }
+
+    // (Opsional) Konversi ctp_encoded menjadi string 'A', 'B', 'C' untuk kolom 'ctp' di database
+    if (ctp_encoded === 1) patientData.ctp = 'A';
+    if (ctp_encoded === 2) patientData.ctp = 'B';
+    if (ctp_encoded === 3) patientData.ctp = 'C';
+
+    // ==========================================
+    // 3. PROSES SIMPAN PRISMA -> SUPABASE
+    // ==========================================
     const prisma = getPrisma();
-    // Konversi CTP dari angka (1/2/3) menjadi huruf (A/B/C) sesuai skema
-    const ctpMap: { [key: number]: string } = { 1: 'A', 2: 'B', 3: 'C' };
-    const ctpString = ctpMap[body.ctp_encoded] || 'A';
-
-    // Generate ID unik untuk pasien baru
-    const generatedId = `TEST-${Date.now()}`;
-
+    
     const newPatient = await prisma.patient.create({
-      data: {
-        patient_id: generatedId,
-        komor_sepsis: body.komor_sepsis,
-        urea_baseline: body.urea_baseline,
-        natrium_baseline: body.natrium_baseline,
-        komp_eh: body.komp_eh,
-        inr_baseline: body.inr_baseline,
-        sgot_baseline: body.sgot_baseline,
-        gfr: body.gfr,
-        ctp: ctpString,
-        lama_rawat: 0, // Wajib diisi 0 karena di Prisma bertipe Int (non-nullable)
-      }
+      data: patientData
     });
 
     return NextResponse.json({ success: true, data: newPatient });
-  } catch (error) {
-    console.error('Database Error:', error);
-    return NextResponse.json({ error: 'Gagal menyimpan ke database Supabase' }, { status: 500 });
+
+  } catch (error: any) {
+    console.error("Prisma Save Error:", error);
+    return NextResponse.json(
+      { error: `Gagal menyimpan ke database. Detail: ${error.message || 'Kesalahan Server Internal'}` }, 
+      { status: 500 }
+    );
   }
 }
