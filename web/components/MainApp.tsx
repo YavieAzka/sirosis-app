@@ -269,11 +269,27 @@ export default function MainApp() {
       return;
     }
     setSavingMort(true);
+
+    // Konversi eksplisit tipe data string ke Number untuk Prisma
+    const payload = {
+      ...formDataMort,
+      komor_sepsis: Number(formDataMort.komor_sepsis),
+      komp_eh: Number(formDataMort.komp_eh),
+      urea_baseline: Number(formDataMort.urea_baseline),
+      natrium_baseline: Number(formDataMort.natrium_baseline),
+      inr_baseline: Number(formDataMort.inr_baseline),
+      sgot_baseline: Number(formDataMort.sgot_baseline),
+      gfr: Number(formDataMort.gfr),
+      ctp_encoded: Number(formDataMort.ctp_encoded),
+      probability: resultMort?.probability, 
+      token: tokenInput
+    };
+
     try {
       const res = await fetch('/database/save', { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({...formDataMort, probability: resultMort?.probability, token: tokenInput}) 
+        body: JSON.stringify(payload) 
       });
       const data = await res.json();
       if (res.ok) {
@@ -287,17 +303,37 @@ export default function MainApp() {
     finally { setSavingMort(false); }
   };
 
+  // ==========================================
+  // PERBAIKAN: Fungsi Simpan Lama Rawat (LoS)
+  // ==========================================
   const handleSaveToDatabaseLos = async () => {
     if (!tokenInput) {
       alert("Masukkan Token Rahasia terlebih dahulu!");
       return;
     }
     setSavingLos(true);
+
+    // Konversi eksplisit tipe data string ke Number untuk Prisma
+    const payload = {
+      ...formDataLos,
+      komor_sepsis: Number(formDataLos.komor_sepsis),
+      komp_eh: Number(formDataLos.komp_eh),
+      usia: Number(formDataLos.usia),
+      kreatinin_baseline: Number(formDataLos.kreatinin_baseline),
+      bilirubin_baseline: Number(formDataLos.bilirubin_baseline),
+      inr_baseline: Number(formDataLos.inr_baseline),
+      sgot_baseline: Number(formDataLos.sgot_baseline),
+      gfr: Number(formDataLos.gfr),
+      ctp_encoded: Number(formDataLos.ctp_encoded),
+      probability_los: predictionLos, 
+      token: tokenInput
+    };
+
     try {
       const res = await fetch('/database/save', { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({...formDataLos, probability_los: predictionLos, token: tokenInput}) 
+        body: JSON.stringify(payload) 
       });
       const data = await res.json();
       if (res.ok) {
