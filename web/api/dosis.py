@@ -155,15 +155,24 @@ def rekom_propranolol(p: KondisiPasien) -> RekomendasiDosis:
     if p.ctp == 'C' or p.hrs or (p.map_value and p.map_value < 65) or p.ascites_refrakter:
         status = "Avoid"
         dosis = "Umumnya hindari"
-        alasan = "Child-Pugh C, asites refrakter, HRS, atau MAP < 65 mmHg."
+        pemicu = []
+        if p.ctp == 'C':
+            pemicu.append("Child-Pugh C")
+        if p.ascites_refrakter:
+            pemicu.append("asites refrakter")
+        if p.hrs:
+            pemicu.append("HRS")
+        if p.map_value and p.map_value < 65:
+            pemicu.append(f"MAP {p.map_value} mmHg (< 65 mmHg)")
+        alasan = ", ".join(pemicu) + "."
     elif p.ctp == 'B':
         status = "Monitor/Reduce"
-        dosis = "10–20 mg/hari, titrasi perlahan"
+        dosis = "10 - 20 mg/hari, titrasi perlahan"
         alasan = "Child-Pugh B."
     else:
         status = "Use"
-        dosis = "Dosis awal 20–40 mg/hari"
-        alasan = "Child-Pugh A. Titrasi hingga HR 55–60 bpm atau 25% turun dari baseline."
+        dosis = "Dosis awal 20 - 40 mg/hari"
+        alasan = "Child-Pugh A. Titrasi hingga HR 55 - 60 bpm atau 25% turun dari baseline."
 
     return RekomendasiDosis("Propranolol", status, dosis, alasan, peringatan)
 
@@ -182,10 +191,19 @@ def rekom_carvedilol(p: KondisiPasien) -> RekomendasiDosis:
     if p.ctp == 'C' or p.hrs or (p.map_value and p.map_value < 70) or p.ascites_refrakter:
         status = "Avoid"
         dosis = "Hindari"
-        alasan = "Child-Pugh C, asites refrakter, HRS, atau MAP < 70 mmHg."
+        pemicu = []
+        if p.ctp == 'C':
+            pemicu.append("Child-Pugh C")
+        if p.ascites_refrakter:
+            pemicu.append("asites refrakter")
+        if p.hrs:
+            pemicu.append("HRS")
+        if p.map_value and p.map_value < 70:
+            pemicu.append(f"MAP {p.map_value} mmHg (< 70 mmHg)")
+        alasan = ", ".join(pemicu) + "."
     elif p.ctp == 'B':
         status = "Monitor/Reduce"
-        dosis = "3.125–6.25 mg/hari"
+        dosis = "3.125 - 6.25 mg/hari"
         alasan = "Child-Pugh B. Pantau tekanan darah dan fungsi ginjal."
     else:
         status = "Use"
@@ -200,13 +218,13 @@ def rekom_ampisilin_sulbaktam(p: KondisiPasien) -> RekomendasiDosis:
     status, dosis, alasan = "Use / Reduce if CKD", "", ""
 
     if p.gfr >= 30:
-        dosis = "1,5–3 g IV tiap 6 jam (dosis standar)"
+        dosis = "1,5 - 3 g IV tiap 6 jam (dosis standar)"
         alasan = "Fungsi ginjal memadai (CrCl >= 30 mL/min)."
     elif 15 <= p.gfr < 30:
-        dosis = "1,5–3 g IV tiap 12 jam"
+        dosis = "1,5 - 3 g IV tiap 12 jam"
         alasan = "Fungsi ginjal menurun (CrCl 15-29 mL/min)."
     else:
-        dosis = "1,5–3 g IV tiap 24 jam"
+        dosis = "1,5 - 3 g IV tiap 24 jam"
         alasan = "Fungsi ginjal menurun berat (CrCl < 15 mL/min)."
 
     if p.ctp == 'C' and p.gfr < 30:

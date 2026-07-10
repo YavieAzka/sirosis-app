@@ -689,7 +689,7 @@ export default function MainApp() {
               <div className="md:w-1/2 p-8 md:p-10 bg-gray-50 flex flex-col h-full border-t md:border-t-0 border-gray-200">
                 <div className="mb-6">
                   <h2 className="text-xl font-extrabold text-red-900 mb-1">Hasil Rekomendasi</h2>
-                  <p className="text-xs text-red-600 bg-red-100 inline-block px-2 py-1 rounded font-bold">⚠️ PROTOTIPE - Wajib Review Klinis</p>
+                  <p className="text-xs text-red-600 bg-red-100 inline-block px-2 py-1 rounded font-bold">⚠️ PERINGATAN - Wajib Review Klinis</p>
                 </div>
                 
                 <div className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
