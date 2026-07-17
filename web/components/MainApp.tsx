@@ -636,14 +636,65 @@ export default function MainApp() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">Nilai GFR / CrCl (mL/min)</label>
-                    <input type="number" step="any" required className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" placeholder="Contoh: 85.5" value={dosisData.gfr} onChange={(e) => setDosisData({...dosisData, gfr: e.target.value})} />
+                <div className="space-y-4">
+                  {/* Kalkulator GFR Dosis */}
+                  <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
+                      <label className="text-sm font-bold text-gray-700">Nilai GFR / CKD-EPI (mL/min)</label>
+                      <label className="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={autoGfrDosis} onChange={(e) => setAutoGfrDosis(e.target.checked)} />
+                        <span className="text-xs font-bold text-red-900">Hitung Otomatis (CKD-EPI 2021)</span>
+                      </label>
+                    </div>
+                    {autoGfrDosis && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 bg-white rounded-xl border border-red-100 shadow-inner">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-600 mb-1">Serum Kreatinin (mg/dL)</label>
+                          <input type="number" step="any" required={autoGfrDosis} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white" placeholder="Contoh: 1.1" value={gfrParamsDosis.scr} onChange={e => setGfrParamsDosis({...gfrParamsDosis, scr: e.target.value})} />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-600 mb-1">Usia (Tahun)</label>
+                          <input type="number" step="any" required={autoGfrDosis} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white" placeholder="Contoh: 45" value={gfrParamsDosis.age} onChange={e => setGfrParamsDosis({...gfrParamsDosis, age: e.target.value})} />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-600 mb-1">Jenis Kelamin</label>
+                          <select className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white" value={gfrParamsDosis.gender} onChange={e => setGfrParamsDosis({...gfrParamsDosis, gender: e.target.value})}>
+                            <option value="L">Laki-laki</option><option value="P">Perempuan</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                    <input type="number" step="any" required 
+                      className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoGfrDosis ? 'bg-gray-100 text-red-900 font-bold cursor-not-allowed shadow-inner' : 'bg-white text-gray-900'}`}
+                      placeholder={autoGfrDosis ? "Otomatis terkalkulasi..." : "Contoh: 85.5"}
+                      value={dosisData.gfr} readOnly={autoGfrDosis} onChange={(e) => !autoGfrDosis && setDosisData({...dosisData, gfr: e.target.value})} />
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">MAP (mmHg) - Opsional</label>
-                    <input type="number" step="any" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" placeholder="Contoh: 80.5" value={dosisData.map_value} onChange={(e) => setDosisData({...dosisData, map_value: e.target.value})} />
+
+                  {/* Kalkulator MAP Dosis */}
+                  <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
+                      <label className="text-sm font-bold text-gray-700">MAP (mmHg) - Opsional</label>
+                      <label className="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
+                        <input type="checkbox" className="w-4 h-4 text-red-800 rounded focus:ring-red-800" checked={autoMapDosis} onChange={(e) => setAutoMapDosis(e.target.checked)} />
+                        <span className="text-xs font-bold text-red-900">Hitung Otomatis dari Tekanan Darah</span>
+                      </label>
+                    </div>
+                    {autoMapDosis && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-white rounded-xl border border-red-100 shadow-inner">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-600 mb-1">Sistolik / SBP (mmHg)</label>
+                          <input type="number" step="any" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white" placeholder="Contoh: 120" value={mapParamsDosis.sbp} onChange={e => setMapParamsDosis({...mapParamsDosis, sbp: e.target.value})} />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-600 mb-1">Diastolik / DBP (mmHg)</label>
+                          <input type="number" step="any" className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white" placeholder="Contoh: 80" value={mapParamsDosis.dbp} onChange={e => setMapParamsDosis({...mapParamsDosis, dbp: e.target.value})} />
+                        </div>
+                      </div>
+                    )}
+                    <input type="number" step="any" 
+                      className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoMapDosis ? 'bg-gray-100 text-red-900 font-bold cursor-not-allowed shadow-inner' : 'bg-white text-gray-900'}`}
+                      placeholder={autoMapDosis ? "Otomatis terkalkulasi..." : "Contoh: 80.5"}
+                      value={dosisData.map_value} readOnly={autoMapDosis} onChange={(e) => !autoMapDosis && setDosisData({...dosisData, map_value: e.target.value})} />
                   </div>
                 </div>
 
