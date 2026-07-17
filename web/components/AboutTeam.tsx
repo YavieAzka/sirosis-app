@@ -85,7 +85,7 @@ export default function AboutTeam() {
             <div className="flex flex-col items-center text-center group">
               <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-red-50 shadow-lg mb-6 relative transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
                 <img 
-                  src="/images/yavie.jpeg" 
+                  src="/images/yavie.jpg" 
                   alt="Yavie Azka Putra Araly" 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   onError={(e) => { e.currentTarget.src = 'https://ui-avatars.com/api/?name=Yavie+Azka&background=fee2e2&color=991b1b&size=200'; }}
