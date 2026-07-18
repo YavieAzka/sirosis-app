@@ -1,7 +1,7 @@
 // File: components/UserGuide.tsx
 import React from 'react';
 
-export default function UserGuide() {
+export default function UserGuide({ dict }: { dict: any }) {
   return (
     <div className="max-w-4xl mx-auto py-12 px-4 animate-fade-in">
       <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-gray-100">

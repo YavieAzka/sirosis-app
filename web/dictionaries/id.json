@@ -1,0 +1,85 @@
+{
+  "nav": {
+    "calculator": "Kalkulator Klinis",
+    "calculator_short": "Kalkulator",
+    "guide": "Panduan",
+    "methodology": "Metodologi & Referensi",
+    "methodology_short": "Metodologi",
+    "team": "Tim Peneliti",
+    "team_short": "Tim"
+  },
+  "footer": {
+    "disclaimer_title": "Sanggahan Medis (Medical Disclaimer)",
+    "disclaimer_text": "Aplikasi Clinical Decision Support System (CDSS) ini merupakan instrumen purwarupa yang dikembangkan untuk tujuan riset akademis dan TIDAK ditujukan sebagai pengganti dari penilaian, diagnosis, maupun saran medis profesional. Seluruh hasil prediksi kecerdasan buatan (probabilitas mortalitas/LoS) maupun rekomendasi dosis yang dihasilkan oleh sistem (rule engine) wajib dianalisis ulang. Keputusan akhir mengenai tata laksana farmakoterapi dan penyesuaian dosis obat tetap mutlak berada di tangan Dokter Penanggung Jawab Pelayanan (DPJP) dan Apoteker Klinis yang menangani pasien.",
+    "rights": "CirrhoSmartAI Research Project. All rights reserved."
+  },
+  "mainApp": {
+    "tabs": {
+      "mortality": "AI Prediksi Mortalitas",
+      "los": "AI Prediksi Lama Rawat",
+      "dose": "Rekomendasi Dosis Klinis"
+    }
+  },
+  "mortality": {
+    "title": "Kalkulator Prognosis Sirosis Hati",
+    "sepsis_status": "Status Sepsis",
+    "encephalopathy": "Ensefalopati Hepatikum",
+    "ctp_manual": "Skor CTP (Input Manual)",
+    "calculating": "Mengkalkulasi...",
+    "btn_analyze": "Analisis Probabilitas Mortalitas",
+    "options": {
+      "no": "Tidak Ada (0)",
+      "yes": "Ya (1)",
+      "yes_sepsis": "Ya, Sepsis (1)"
+    },
+    "ctp_auto": "Hitung Otomatis dari Parameter Klinis",
+    "inr": {
+      "title": "International Normalized Ratio (INR)",
+      "direct": "INPUT LANGSUNG",
+      "calculate": "HITUNG DARI PT",
+      "placeholder": "Contoh: 1.2",
+      "pt_patient": "PT Pasien (detik)",
+      "pt_normal": "PT Normal/Kontrol (detik)",
+      "isi_value": "Nilai ISI Reagen",
+      "placeholder_pt": "Contoh: 14.5",
+      "placeholder_normal": "Contoh: 12.0",
+      "calc_result": "Hasil Kalkulasi INR:"
+    },
+    "ctp_calc": {
+      "title": "Skor CTP (Child-Turcotte-Pugh)",
+      "auto": "Hitung Otomatis dari Parameter Klinis",
+      "select": "-- Pilih --",
+      "total": "Total Skor:",
+      "class": "Kelas CTP:"
+    },
+    "gfr": {
+      "title": "Nilai GFR / CKD-EPI (mL/min)",
+      "auto": "Hitung Otomatis (CKD-EPI 2021)",
+      "scr": "Serum Kreatinin (mg/dL)",
+      "age": "Usia (Tahun)",
+      "gender": "Jenis Kelamin",
+      "male": "Laki-laki",
+      "female": "Perempuan",
+      "placeholder_scr": "Contoh: 1.1",
+      "placeholder_age": "Contoh: 45",
+      "placeholder_gfr": "Contoh: 85.5",
+      "placeholder_auto": "Otomatis terkalkulasi..."
+    },
+    "modal": {
+      "title": "Laporan Keputusan AI",
+      "prob_title": "Probabilitas Kematian",
+      "ai_label": "AI Label:",
+      "high_risk": "High Risk / Mortalitas",
+      "survive": "Survive",
+      "hide_shap": "Sembunyikan Analisis Klinis (SHAP)",
+      "show_shap": "Lihat Detail Analisis Klinis AI",
+      "risk_contrib": "Kontributor Risiko (Faktor Predominan)",
+      "patient_input": "Input pasien:",
+      "auth_title": "Otorisasi Simpan Data",
+      "auth_placeholder": "Masukkan Token Rahasia",
+      "btn_close": "Tutup",
+      "btn_saving": "Menyimpan...",
+      "btn_save": "Simpan ke Database"
+    }
+  }
+}

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Mail } from 'lucide-react';
 
-export default function AboutTeam() {
+export default function AboutTeam({ dict }: { dict: any }) {
   // Array data placeholder untuk 4 Promotor
   const promotors = [
     { id: 1, name: 'Prof. apt. Fatma Sri Wahyuni, Ph.D', role: 'Clinical Domain Expert' },

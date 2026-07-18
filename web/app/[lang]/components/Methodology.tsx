@@ -1,7 +1,7 @@
 // File: components/Methodology.tsx
 import React from 'react';
 
-export default function Methodology() {
+export default function Methodology({ dict }: { dict: any }) {
   return (
     <div className="max-w-5xl mx-auto py-12 px-4 animate-fade-in">
       <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-gray-100">
