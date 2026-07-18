@@ -67,7 +67,11 @@ export default function DoseRecommender() {
   const handleToggleAllObat = (checked: boolean) => {
     setDosisData(prev => ({
       ...prev, obat_pilihan: {
-        spiro_furo: checked, spironolakton: checked, furosemid: checked,
+        // Jika Pilih Semua (true), aktifkan Kombinasi saja dan matikan yang tunggal
+        spiro_furo: checked, 
+        spironolakton: false, 
+        furosemid: false,
+        
         propranolol: checked, carvedilol: checked,
         ampisilin_sulbaktam: checked, azitromisin: checked, levofloxacin: checked
       }
@@ -114,18 +118,49 @@ export default function DoseRecommender() {
                     <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col">
                         <p className="text-xs font-bold text-blue-900 mb-3 border-b border-blue-200 pb-2">Diuretik</p>
                         <div className="flex flex-col gap-3">
-                            <label className="flex items-start space-x-3 cursor-pointer group">
-                                <input type="checkbox" className="w-4 h-4 mt-0.5 text-blue-700 rounded focus:ring-blue-700 cursor-pointer" checked={dosisData.obat_pilihan.spiro_furo} onChange={() => handleObatToggle('spiro_furo')} />
-                                <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-blue-900 transition-colors">Kombinasi (Spiro+Furo)</span>
+                            
+                            {/* Opsi Kombinasi */}
+                            <label className={`flex items-start space-x-3 group ${dosisData.obat_pilihan.spironolakton || dosisData.obat_pilihan.furosemid ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                                <input 
+                                    type="checkbox" 
+                                    className="w-4 h-4 mt-0.5 text-blue-700 rounded focus:ring-blue-700 disabled:cursor-not-allowed" 
+                                    checked={dosisData.obat_pilihan.spiro_furo} 
+                                    onChange={() => handleObatToggle('spiro_furo')}
+                                    disabled={dosisData.obat_pilihan.spironolakton || dosisData.obat_pilihan.furosemid} 
+                                />
+                                <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-blue-900 transition-colors">
+                                    Kombinasi (Spiro+Furo)
+                                </span>
                             </label>
-                            <label className="flex items-start space-x-3 cursor-pointer group">
-                                <input type="checkbox" className="w-4 h-4 mt-0.5 text-blue-700 rounded focus:ring-blue-700 cursor-pointer" checked={dosisData.obat_pilihan.spironolakton} onChange={() => handleObatToggle('spironolakton')} />
-                                <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-blue-900 transition-colors">Spironolakton Tunggal</span>
+                            
+                            {/* Opsi Spironolakton Tunggal */}
+                            <label className={`flex items-start space-x-3 group ${dosisData.obat_pilihan.spiro_furo ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                                <input 
+                                    type="checkbox" 
+                                    className="w-4 h-4 mt-0.5 text-blue-700 rounded focus:ring-blue-700 disabled:cursor-not-allowed" 
+                                    checked={dosisData.obat_pilihan.spironolakton} 
+                                    onChange={() => handleObatToggle('spironolakton')}
+                                    disabled={dosisData.obat_pilihan.spiro_furo} 
+                                />
+                                <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-blue-900 transition-colors">
+                                    Spironolakton Tunggal
+                                </span>
                             </label>
-                            <label className="flex items-start space-x-3 cursor-pointer group">
-                                <input type="checkbox" className="w-4 h-4 mt-0.5 text-blue-700 rounded focus:ring-blue-700 cursor-pointer" checked={dosisData.obat_pilihan.furosemid} onChange={() => handleObatToggle('furosemid')} />
-                                <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-blue-900 transition-colors">Furosemid Tunggal</span>
+                            
+                            {/* Opsi Furosemid Tunggal */}
+                            <label className={`flex items-start space-x-3 group ${dosisData.obat_pilihan.spiro_furo ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                                <input 
+                                    type="checkbox" 
+                                    className="w-4 h-4 mt-0.5 text-blue-700 rounded focus:ring-blue-700 disabled:cursor-not-allowed" 
+                                    checked={dosisData.obat_pilihan.furosemid} 
+                                    onChange={() => handleObatToggle('furosemid')}
+                                    disabled={dosisData.obat_pilihan.spiro_furo} 
+                                />
+                                <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-blue-900 transition-colors">
+                                    Furosemid Tunggal
+                                </span>
                             </label>
+                            
                         </div>
                     </div>
 
