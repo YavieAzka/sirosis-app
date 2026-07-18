@@ -88,6 +88,29 @@ export default function LosPredictor() {
     finally { setSavingLos(false); }
   };
 
+  const calculateMeld = (bil: string | number, inr: string | number, cr: string | number) => {
+    const b = parseFloat(String(bil));
+    const i = parseFloat(String(inr));
+    const c = parseFloat(String(cr));
+
+    // Validasi: Logaritma natural ln(x) hanya terdefinisi jika x > 0
+    if (!isNaN(b) && !isNaN(i) && !isNaN(c) && b > 0 && i > 0 && c > 0) {
+      // Formula: 3.78 * ln[Bilirubin] + 11.2 * ln[INR] + 9.57 * ln[Creatinine] + 6.43
+      let meldScore = 3.78 * Math.log(b) + 11.2 * Math.log(i) + 9.57 * Math.log(c) + 6.43;
+      
+      return meldScore.toFixed(2); // Dibulatkan 2 angka di belakang koma
+    }
+    
+    return null;
+  };
+
+  // Menangkap hasil kalkulasi secara real-time
+  const meldResult = calculateMeld(
+    formDataLos.bilirubin_baseline, 
+    formDataLos.inr_baseline, 
+    formDataLos.kreatinin_baseline
+  );
+
   return (
     <div className="animate-fade-in">
         <div className="bg-gradient-to-r from-red-900 via-rose-900 to-red-800 p-8 text-center shadow-inner">
@@ -160,6 +183,33 @@ export default function LosPredictor() {
                 value={formDataLos.gfr} readOnly={autoGfrLos} onChange={(e) => !autoGfrLos && setFormDataLos({...formDataLos, gfr: e.target.value})} />
             </div>
         </div>
+        <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-red-50 to-rose-50 p-5 rounded-xl border border-red-200 shadow-sm mt-4 flex flex-col sm:flex-row items-center justify-between">
+        <div className="mb-4 sm:mb-0">
+          <h3 className="text-sm font-bold text-red-900 mb-1 uppercase tracking-wide">
+            Model for End-Stage Liver Disease (MELD)
+          </h3>
+          <p className="text-xs text-red-700/80 font-medium">
+            Kalkulasi otomatis berdasarkan input <span className="font-bold">Bilirubin</span>, <span className="font-bold">INR</span>, dan <span className="font-bold">Serum Kreatinin</span>.
+          </p>
+        </div>
+        
+        <div className="bg-white px-8 py-4 rounded-xl border border-red-100 shadow-inner flex items-center justify-center min-w-[140px]">
+          {meldResult !== null ? (
+            <div className="flex flex-col items-center">
+              <span className="text-3xl font-black text-red-800 drop-shadow-sm">
+                {meldResult}
+              </span>
+              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
+                Skor
+              </span>
+            </div>
+          ) : (
+            <span className="text-xs font-bold text-gray-400 text-center">
+              Menunggu <br/> input lengkap...
+            </span>
+          )}
+        </div>
+      </div>
         <button type="submit" disabled={loadingLos} className="w-full mt-10 bg-red-800 hover:bg-red-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all">{loadingLos ? 'Mengkalkulasi...' : 'Analisis Prediksi Lama Rawat'}</button>
         </form>
 
