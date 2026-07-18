@@ -1,8 +1,11 @@
 // File: components/MortalityPredictor.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { CtpParams, hitungSkorCtp, hitungGfrCkdEpi } from '../utils/clinical';
 import CtpCalculator from './CtpCalculator';
+import InrInput from './InrInput';
+
+
 
 type ShapContribution = { feature: string; contribution: number; value_input: number };
 type PredictionResultMort = { 
@@ -33,6 +36,7 @@ export default function MortalityPredictor() {
 
   const [autoGfrMort, setAutoGfrMort] = useState(false);
   const [gfrParamsMort, setGfrParamsMort] = useState({ scr: '', age: '', gender: 'L' });
+  const [finalInr, setFinalInr] = useState<number | null>(null);
 
   useEffect(() => {
     if (autoGfrMort && gfrParamsMort.scr && gfrParamsMort.age) {
@@ -73,7 +77,14 @@ export default function MortalityPredictor() {
       inr_baseline: Number(formDataMort.inr_baseline), sgot_baseline: Number(formDataMort.sgot_baseline),
       gfr: Number(formDataMort.gfr), ctp_encoded: Number(formDataMort.ctp_encoded),
     };
-
+    console.log("===========================================");
+    console.log("[DEBUG] Memulai request prediksi ke Model AI...");
+    console.log("Data Payload (Raw JSON):", JSON.stringify(payload, null, 2));
+    
+    // console.table akan menampilkan data dalam bentuk tabel yang sangat 
+    // mudah dibaca di tab Console pada browser (Chrome/Edge/Firefox)
+    console.table(payload); 
+    console.log("===========================================");
     try {
       const res = await fetch('/api/predict', { method: 'POST', body: JSON.stringify(payload) });
       const data = await res.json();
@@ -105,6 +116,15 @@ export default function MortalityPredictor() {
     } catch (error) { alert('Gagal menghubungi database.'); } 
     finally { setSavingMort(false); }
   };
+
+  // Gunakan useCallback dengan dependensi kosong [] agar referensi fungsi tidak pernah berubah
+  const handleInrChange = useCallback((val: number | null) => {
+    // Gunakan 'prev' agar kita tidak bergantung pada state formDataMort saat ini
+    setFormDataMort(prev => ({
+      ...prev, 
+      inr_baseline: val !== null ? String(val) : ''
+    }));
+  }, []);
 
   return (
     <div className="animate-fade-in">
@@ -140,10 +160,14 @@ export default function MortalityPredictor() {
             </CtpCalculator>
             </div>
             
+            <div className="col-span-1 md:col-span-2">
+                <InrInput onInrChange={handleInrChange} />
+            </div>
+
             {[ 
             {id: 'urea_baseline', label: 'Urea Baseline (mg/dL)', ph: 'Contoh: 25.5'}, 
             {id: 'natrium_baseline', label: 'Natrium Baseline (mEq/L)', ph: 'Contoh: 138.0'}, 
-            {id: 'inr_baseline', label: 'INR Baseline', ph: 'Contoh: 1.2'}, 
+            
             {id: 'sgot_baseline', label: 'SGOT Baseline (U/L)', ph: 'Contoh: 45.5'}
             ].map((f) => (
             <div key={f.id} className="space-y-2">
