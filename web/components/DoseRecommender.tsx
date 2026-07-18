@@ -17,6 +17,10 @@ export default function DoseRecommender() {
   const [loadingDosis, setLoadingDosis] = useState(false);
   const [dosisResult, setDosisResult] = useState<any>(null);
 
+  // State terpisah untuk CKD dan AKI
+  const [isCKD, setIsCKD] = useState(false);
+  const [isAKI, setIsAKI] = useState(false);
+
   const [autoCtpDosis, setAutoCtpDosis] = useState(false);
   const [ctpParamsDosis, setCtpParamsDosis] = useState<CtpParams>({
     bilirubin: '', albumin: '', inr: '', ascites: '', encephalopathy: '',
@@ -78,7 +82,12 @@ export default function DoseRecommender() {
     try {
       const res = await fetch('/api/dosis', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...dosisData, obat_pilihan: selectedDrugsList }),
+        body: JSON.stringify({ 
+          ...dosisData, 
+          // Gabungkan logika CKD dan AKI sebelum dikirim ke API
+          gagal_ginjal_akut: (isCKD || isAKI) ? 1 : 0,
+          obat_pilihan: selectedDrugsList 
+        }),
       });
       const data = await res.json();
       if (res.ok) setDosisResult(data);
@@ -100,10 +109,8 @@ export default function DoseRecommender() {
                     <button type="button" onClick={() => handleToggleAllObat(true)} className="text-xs font-bold text-red-800 hover:text-red-900 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 transition-colors">Pilih Semua</button>
                 </div>
                 
-                {/* BLOK GRID OBAT TANPA BOX PUTIH */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     
-                    {/* Modul Diuretik */}
                     <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col">
                         <p className="text-xs font-bold text-blue-900 mb-3 border-b border-blue-200 pb-2">Diuretik</p>
                         <div className="flex flex-col gap-3">
@@ -122,7 +129,6 @@ export default function DoseRecommender() {
                         </div>
                     </div>
 
-                    {/* Modul Beta-Bloker */}
                     <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex flex-col">
                         <p className="text-xs font-bold text-emerald-900 mb-3 border-b border-emerald-200 pb-2">Beta-Bloker</p>
                         <div className="flex flex-col gap-3">
@@ -137,7 +143,6 @@ export default function DoseRecommender() {
                         </div>
                     </div>
 
-                    {/* Modul Antibiotik */}
                     <div className="bg-rose-50 p-4 rounded-xl border border-rose-100 col-span-1 md:col-span-2 flex flex-col">
                         <p className="text-xs font-bold text-rose-900 mb-3 border-b border-rose-200 pb-2">Antibiotik (Bila Terdapat Indikasi Infeksi)</p>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -234,10 +239,14 @@ export default function DoseRecommender() {
             <div className="space-y-3 bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
                 <p className="text-xs font-bold text-gray-800 border-b border-gray-200 pb-2 mb-3 uppercase tracking-wider">Komplikasi & Kondisi Akut</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                
+                {/* 
+                  Opsi gagal_ginjal_akut dihapus dari array map di bawah ini 
+                  dan digantikan secara manual agar CKD dan AKI terpisah.
+                */}
                 {[ 
                     {id: 'ascites_refrakter', label: 'Ascites Refrakter'}, 
                     {id: 'hrs', label: 'Hepatorenal Syndrome (HRS)'}, 
-                    {id: 'gagal_ginjal_akut', label: 'Gagal Ginjal Akut (AKI/CKD)'}, 
                     {id: 'sepsis_pneumonia', label: 'Sepsis atau Pneumonia'},
                     {id: 'ast_alt_tinggi', label: 'AST/ALT > 2x Normal'}
                 ].map((tg) => (
@@ -246,6 +255,19 @@ export default function DoseRecommender() {
                     <span className="text-sm font-medium text-gray-700 leading-tight group-hover:text-red-900 transition-colors">{tg.label}</span>
                     </label>
                 ))}
+
+                {/* Checkbox CKD (Baru) */}
+                <label className="flex items-start space-x-3 cursor-pointer group">
+                    <input type="checkbox" className="w-4 h-4 mt-0.5 text-red-800 rounded focus:ring-red-800 cursor-pointer" checked={isCKD} onChange={(e) => setIsCKD(e.target.checked)} />
+                    <span className="text-sm font-medium text-gray-700 leading-tight group-hover:text-red-900 transition-colors">Chronic Kidney Disease (CKD)</span>
+                </label>
+                
+                {/* Checkbox AKI (Baru) */}
+                <label className="flex items-start space-x-3 cursor-pointer group">
+                    <input type="checkbox" className="w-4 h-4 mt-0.5 text-red-800 rounded focus:ring-red-800 cursor-pointer" checked={isAKI} onChange={(e) => setIsAKI(e.target.checked)} />
+                    <span className="text-sm font-medium text-gray-700 leading-tight group-hover:text-red-900 transition-colors">Acute Kidney Injury (AKI)</span>
+                </label>
+
                 </div>
             </div>
 
