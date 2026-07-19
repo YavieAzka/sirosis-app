@@ -32,7 +32,6 @@ export default function DoseRecommender({ dict }: { dict: any }) {
   const [loadingDosis, setLoadingDosis] = useState(false);
   const [dosisResult, setDosisResult] = useState<any>(null);
 
-  // State terpisah untuk CKD dan AKI
   const [isCKD, setIsCKD] = useState(false);
   const [isAKI, setIsAKI] = useState(false);
 
@@ -109,11 +108,9 @@ export default function DoseRecommender({ dict }: { dict: any }) {
     setDosisData((prev) => ({
       ...prev,
       obat_pilihan: {
-        // Jika Pilih Semua (true), aktifkan Kombinasi saja dan matikan yang tunggal
         spiro_furo: checked,
         spironolakton: false,
         furosemid: false,
-
         propranolol: checked,
         carvedilol: checked,
         ampisilin_sulbaktam: checked,
@@ -136,16 +133,20 @@ export default function DoseRecommender({ dict }: { dict: any }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...dosisData,
-          // Gabungkan logika CKD dan AKI sebelum dikirim ke API
           gagal_ginjal_akut: isCKD || isAKI ? 1 : 0,
           obat_pilihan: selectedDrugsList,
         }),
       });
       const data = await res.json();
       if (res.ok) setDosisResult(data);
-      else alert(data.error || "Terjadi kesalahan sistem dosis.");
+      else
+        alert(
+          data.error ||
+            dict.dose?.errorSystem ||
+            "Terjadi kesalahan sistem dosis.",
+        );
     } catch (error) {
-      alert("Gagal menghubungi server rekomendasi.");
+      alert(dict.dose?.errorNetwork || "Gagal menghubungi server rekomendasi.");
     } finally {
       setLoadingDosis(false);
     }
@@ -158,7 +159,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
       >
         <div className="mb-6">
           <h2 className="text-2xl font-extrabold text-red-900">
-            Evaluasi Dosis & Terapi
+            {dict.dose?.title || "Evaluasi Dosis & Terapi"}
           </h2>
         </div>
         <form onSubmit={handlePredictDosis} className="space-y-5">
@@ -166,24 +167,23 @@ export default function DoseRecommender({ dict }: { dict: any }) {
             <div className="absolute top-0 left-0 w-1 h-full bg-red-800"></div>
             <div className="flex justify-between items-center border-b border-gray-100 pb-3 mb-4">
               <p className="text-sm font-bold text-gray-800">
-                Pilih Obat untuk Dievaluasi
+                {dict.dose?.selectDrugs || "Pilih Obat untuk Dievaluasi"}
               </p>
               <button
                 type="button"
                 onClick={() => handleToggleAllObat(true)}
                 className="text-xs font-bold text-red-800 hover:text-red-900 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 transition-colors"
               >
-                Pilih Semua
+                {dict.dose?.selectAll || "Pilih Semua"}
               </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col">
                 <p className="text-xs font-bold text-blue-900 mb-3 border-b border-blue-200 pb-2">
-                  Diuretik
+                  {dict.dose?.diuretics || "Diuretik"}
                 </p>
                 <div className="flex flex-col gap-3">
-                  {/* Opsi Kombinasi */}
                   <label
                     className={`flex items-start space-x-3 group ${dosisData.obat_pilihan.spironolakton || dosisData.obat_pilihan.furosemid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                   >
@@ -198,11 +198,10 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                       }
                     />
                     <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-blue-900 transition-colors">
-                      Kombinasi (Spiro+Furo)
+                      {dict.dose?.comboSpiroFuro || "Kombinasi (Spiro+Furo)"}
                     </span>
                   </label>
 
-                  {/* Opsi Spironolakton Tunggal */}
                   <label
                     className={`flex items-start space-x-3 group ${dosisData.obat_pilihan.spiro_furo ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                   >
@@ -214,11 +213,10 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                       disabled={dosisData.obat_pilihan.spiro_furo}
                     />
                     <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-blue-900 transition-colors">
-                      Spironolakton Tunggal
+                      {dict.dose?.spiroSingle || "Spironolakton Tunggal"}
                     </span>
                   </label>
 
-                  {/* Opsi Furosemid Tunggal */}
                   <label
                     className={`flex items-start space-x-3 group ${dosisData.obat_pilihan.spiro_furo ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                   >
@@ -230,7 +228,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                       disabled={dosisData.obat_pilihan.spiro_furo}
                     />
                     <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-blue-900 transition-colors">
-                      Furosemid Tunggal
+                      {dict.dose?.furoSingle || "Furosemid Tunggal"}
                     </span>
                   </label>
                 </div>
@@ -238,7 +236,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
 
               <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex flex-col">
                 <p className="text-xs font-bold text-emerald-900 mb-3 border-b border-emerald-200 pb-2">
-                  Beta-Bloker
+                  {dict.dose?.betaBlockers || "Beta-Bloker"}
                 </p>
                 <div className="flex flex-col gap-3">
                   <label className="flex items-start space-x-3 cursor-pointer group">
@@ -249,7 +247,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                       onChange={() => handleObatToggle("propranolol")}
                     />
                     <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-emerald-900 transition-colors">
-                      Propranolol
+                      {dict.dose?.propranolol || "Propranolol"}
                     </span>
                   </label>
                   <label className="flex items-start space-x-3 cursor-pointer group">
@@ -260,7 +258,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                       onChange={() => handleObatToggle("carvedilol")}
                     />
                     <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-emerald-900 transition-colors">
-                      Carvedilol
+                      {dict.dose?.carvedilol || "Carvedilol"}
                     </span>
                   </label>
                 </div>
@@ -268,7 +266,8 @@ export default function DoseRecommender({ dict }: { dict: any }) {
 
               <div className="bg-rose-50 p-4 rounded-xl border border-rose-100 col-span-1 md:col-span-2 flex flex-col">
                 <p className="text-xs font-bold text-rose-900 mb-3 border-b border-rose-200 pb-2">
-                  Antibiotik (Bila Terdapat Indikasi Infeksi)
+                  {dict.dose?.antibioticsInfo ||
+                    "Antibiotik (Bila Terdapat Indikasi Infeksi)"}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <label className="flex items-start space-x-3 cursor-pointer group">
@@ -279,7 +278,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                       onChange={() => handleObatToggle("ampisilin_sulbaktam")}
                     />
                     <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-rose-900 transition-colors">
-                      Ampisilin-Sulbaktam
+                      {dict.dose?.ampiSulbactam || "Ampisilin-Sulbaktam"}
                     </span>
                   </label>
                   <label className="flex items-start space-x-3 cursor-pointer group">
@@ -290,7 +289,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                       onChange={() => handleObatToggle("levofloxacin")}
                     />
                     <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-rose-900 transition-colors">
-                      Levofloxacin
+                      {dict.dose?.levofloxacin || "Levofloxacin"}
                     </span>
                   </label>
                   <label className="flex items-start space-x-3 cursor-pointer group">
@@ -301,7 +300,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                       onChange={() => handleObatToggle("azitromisin")}
                     />
                     <span className="text-sm font-semibold text-gray-700 leading-tight group-hover:text-rose-900 transition-colors">
-                      Azitromisin
+                      {dict.dose?.azithromycin || "Azitromisin"}
                     </span>
                   </label>
                 </div>
@@ -313,7 +312,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
             <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
                 <label className="text-sm font-bold text-gray-700">
-                  Nilai GFR / CKD-EPI (mL/min)
+                  {dict.dose?.gfrLabel || "Nilai GFR / CKD-EPI (mL/min)"}
                 </label>
                 <label className="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
                   <input
@@ -323,7 +322,8 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                     onChange={(e) => setAutoGfrDosis(e.target.checked)}
                   />
                   <span className="text-xs font-bold text-red-900">
-                    Hitung Otomatis (CKD-EPI 2021)
+                    {dict.dose?.autoCalculateCkd ||
+                      "Hitung Otomatis (CKD-EPI 2021)"}
                   </span>
                 </label>
               </div>
@@ -331,14 +331,14 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 p-4 bg-white rounded-xl border border-red-100 shadow-inner">
                   <div>
                     <label className="block text-xs font-bold text-gray-600 mb-1">
-                      Serum Kreatinin (mg/dL)
+                      {dict.dose?.serumCreatinine || "Serum Kreatinin (mg/dL)"}
                     </label>
                     <input
                       type="number"
                       step="any"
                       required={autoGfrDosis}
                       className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white"
-                      placeholder="Contoh: 1.1"
+                      placeholder={dict.dose?.placeholderEx1 || "Contoh: 1.1"}
                       value={gfrParamsDosis.scr}
                       onChange={(e) =>
                         setGfrParamsDosis({
@@ -350,14 +350,14 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-600 mb-1">
-                      Usia (Tahun)
+                      {dict.dose?.ageYears || "Usia (Tahun)"}
                     </label>
                     <input
                       type="number"
                       step="any"
                       required={autoGfrDosis}
                       className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white"
-                      placeholder="Contoh: 45"
+                      placeholder={dict.dose?.placeholderExAge || "Contoh: 45"}
                       value={gfrParamsDosis.age}
                       onChange={(e) =>
                         setGfrParamsDosis({
@@ -369,7 +369,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-600 mb-1">
-                      Jenis Kelamin
+                      {dict.dose?.gender || "Jenis Kelamin"}
                     </label>
                     <select
                       className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white"
@@ -381,8 +381,12 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                         })
                       }
                     >
-                      <option value="L">Laki-laki</option>
-                      <option value="P">Perempuan</option>
+                      <option value="L">
+                        {dict.dose?.male || "Laki-laki"}
+                      </option>
+                      <option value="P">
+                        {dict.dose?.female || "Perempuan"}
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -393,7 +397,9 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                 required
                 className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoGfrDosis ? "bg-gray-100 text-red-900 font-bold cursor-not-allowed shadow-inner" : "bg-white text-gray-900"}`}
                 placeholder={
-                  autoGfrDosis ? "Otomatis terkalkulasi..." : "Contoh: 85.5"
+                  autoGfrDosis
+                    ? dict.dose?.autoCalculated || "Otomatis terkalkulasi..."
+                    : dict.dose?.placeholderExGfr || "Contoh: 85.5"
                 }
                 value={dosisData.gfr}
                 readOnly={autoGfrDosis}
@@ -407,7 +413,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
             <div className="bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
                 <label className="text-sm font-bold text-gray-700">
-                  MAP (mmHg) - Opsional
+                  {dict.dose?.mapLabel || "MAP (mmHg) - Opsional"}
                 </label>
                 <label className="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors">
                   <input
@@ -417,7 +423,8 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                     onChange={(e) => setAutoMapDosis(e.target.checked)}
                   />
                   <span className="text-xs font-bold text-red-900">
-                    Hitung Otomatis dari Tekanan Darah
+                    {dict.dose?.autoCalculateBp ||
+                      "Hitung Otomatis dari Tekanan Darah"}
                   </span>
                 </label>
               </div>
@@ -425,13 +432,13 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-white rounded-xl border border-red-100 shadow-inner">
                   <div>
                     <label className="block text-xs font-bold text-gray-600 mb-1">
-                      Sistolik / SBP (mmHg)
+                      {dict.dose?.sbp || "Sistolik / SBP (mmHg)"}
                     </label>
                     <input
                       type="number"
                       step="any"
                       className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white"
-                      placeholder="Contoh: 120"
+                      placeholder={dict.dose?.placeholderExSbp || "Contoh: 120"}
                       value={mapParamsDosis.sbp}
                       onChange={(e) =>
                         setMapParamsDosis({
@@ -443,13 +450,13 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-600 mb-1">
-                      Diastolik / DBP (mmHg)
+                      {dict.dose?.dbp || "Diastolik / DBP (mmHg)"}
                     </label>
                     <input
                       type="number"
                       step="any"
                       className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 bg-white"
-                      placeholder="Contoh: 80"
+                      placeholder={dict.dose?.placeholderExDbp || "Contoh: 80"}
                       value={mapParamsDosis.dbp}
                       onChange={(e) =>
                         setMapParamsDosis({
@@ -466,7 +473,9 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                 step="any"
                 className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoMapDosis ? "bg-gray-100 text-red-900 font-bold cursor-not-allowed shadow-inner" : "bg-white text-gray-900"}`}
                 placeholder={
-                  autoMapDosis ? "Otomatis terkalkulasi..." : "Contoh: 80.5"
+                  autoMapDosis
+                    ? dict.dose?.autoCalculated || "Otomatis terkalkulasi..."
+                    : dict.dose?.placeholderExMap || "Contoh: 80.5"
                 }
                 value={dosisData.map_value}
                 readOnly={autoMapDosis}
@@ -490,7 +499,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
           >
             <div className="space-y-2 mt-4 border-t border-gray-200 pt-4">
               <label className="block text-sm font-bold text-gray-700">
-                Kelas CTP (Input Manual)
+                {dict.dose?.ctpClassManual || "Kelas CTP (Input Manual)"}
               </label>
               <select
                 className={`w-full border border-gray-300 rounded-xl p-3.5 focus:ring-2 focus:ring-red-800 transition-all ${autoCtpDosis ? "bg-gray-100 text-gray-400 cursor-not-allowed shadow-inner" : "bg-white text-gray-900"}`}
@@ -501,27 +510,35 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                   setDosisData({ ...dosisData, ctp: e.target.value })
                 }
               >
-                <option value="A">Kelas A</option>
-                <option value="B">Kelas B</option>
-                <option value="C">Kelas C</option>
+                <option value="A">{dict.dose?.classA || "Kelas A"}</option>
+                <option value="B">{dict.dose?.classB || "Kelas B"}</option>
+                <option value="C">{dict.dose?.classC || "Kelas C"}</option>
               </select>
             </div>
           </CtpCalculator>
 
           <div className="space-y-3 bg-gray-50 p-5 rounded-xl border border-gray-200 shadow-sm">
             <p className="text-xs font-bold text-gray-800 border-b border-gray-200 pb-2 mb-3 uppercase tracking-wider">
-              Komplikasi & Kondisi Akut
+              {dict.dose?.complications || "Komplikasi & Kondisi Akut"}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* 
-                  Opsi gagal_ginjal_akut dihapus dari array map di bawah ini 
-                  dan digantikan secara manual agar CKD dan AKI terpisah.
-                */}
               {[
-                { id: "ascites_refrakter", label: "Ascites Refrakter" },
-                { id: "hrs", label: "Hepatorenal Syndrome (HRS)" },
-                { id: "sepsis_pneumonia", label: "Sepsis atau Pneumonia" },
-                { id: "ast_alt_tinggi", label: "AST/ALT > 2x Normal" },
+                {
+                  id: "ascites_refrakter",
+                  label: dict.dose?.ascitesRefractory || "Ascites Refrakter",
+                },
+                {
+                  id: "hrs",
+                  label: dict.dose?.hrs || "Hepatorenal Syndrome (HRS)",
+                },
+                {
+                  id: "sepsis_pneumonia",
+                  label: dict.dose?.sepsisPneumonia || "Sepsis atau Pneumonia",
+                },
+                {
+                  id: "ast_alt_tinggi",
+                  label: dict.dose?.astAltHigh || "AST/ALT > 2x Normal",
+                },
               ].map((tg) => (
                 <label
                   key={tg.id}
@@ -544,7 +561,6 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                 </label>
               ))}
 
-              {/* Checkbox CKD (Baru) */}
               <label className="flex items-start space-x-3 cursor-pointer group">
                 <input
                   type="checkbox"
@@ -553,11 +569,10 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                   onChange={(e) => setIsCKD(e.target.checked)}
                 />
                 <span className="text-sm font-medium text-gray-700 leading-tight group-hover:text-red-900 transition-colors">
-                  Chronic Kidney Disease (CKD)
+                  {dict.dose?.ckd || "Chronic Kidney Disease (CKD)"}
                 </span>
               </label>
 
-              {/* Checkbox AKI (Baru) */}
               <label className="flex items-start space-x-3 cursor-pointer group">
                 <input
                   type="checkbox"
@@ -566,7 +581,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                   onChange={(e) => setIsAKI(e.target.checked)}
                 />
                 <span className="text-sm font-medium text-gray-700 leading-tight group-hover:text-red-900 transition-colors">
-                  Acute Kidney Injury (AKI)
+                  {dict.dose?.aki || "Acute Kidney Injury (AKI)"}
                 </span>
               </label>
             </div>
@@ -578,8 +593,8 @@ export default function DoseRecommender({ dict }: { dict: any }) {
             className="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all"
           >
             {loadingDosis
-              ? "Memproses Rule Engine..."
-              : "Cek Rekomendasi Dosis"}
+              ? dict.dose?.processingEngine || "Memproses Rule Engine..."
+              : dict.dose?.checkRecommendation || "Cek Rekomendasi Dosis"}
           </button>
         </form>
       </div>
@@ -588,10 +603,11 @@ export default function DoseRecommender({ dict }: { dict: any }) {
         <div className="md:w-1/2 p-8 md:p-10 bg-gray-50 flex flex-col h-full border-t md:border-t-0 border-gray-200">
           <div className="mb-6">
             <h2 className="text-xl font-extrabold text-red-900 mb-1">
-              Hasil Rekomendasi
+              {dict.dose?.resultTitle || "Hasil Rekomendasi"}
             </h2>
             <p className="text-xs text-red-600 bg-red-100 inline-block px-2 py-1 rounded font-bold">
-              ⚠️ PERINGATAN - Wajib Review Klinis
+              {dict.dose?.warningReview ||
+                "⚠️ PERINGATAN - Wajib Review Klinis"}
             </p>
           </div>
 
@@ -624,14 +640,17 @@ export default function DoseRecommender({ dict }: { dict: any }) {
 
                   <div className="mt-4 border-t border-gray-200 pt-3">
                     <p className="text-sm text-gray-700 leading-relaxed">
-                      <b className="text-gray-900">Alasan:</b> {data.alasan}
+                      <b className="text-gray-900">
+                        {dict.dose?.reasonLabel || "Alasan:"}
+                      </b>{" "}
+                      {data.alasan}
                     </p>
                   </div>
 
                   {data.peringatan && data.peringatan.length > 0 && (
                     <div className="mt-4 bg-red-100 p-3.5 rounded-lg border border-red-200 text-xs text-red-900 shadow-inner">
                       <b className="uppercase tracking-wider">
-                        Perhatian Khusus:
+                        {dict.dose?.specialAttention || "Perhatian Khusus:"}
                       </b>
                       <ul className="list-disc pl-5 mt-1.5 space-y-1">
                         {data.peringatan.map((w: string, i: number) => (
