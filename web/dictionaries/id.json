@@ -81,5 +81,26 @@
       "btn_saving": "Menyimpan...",
       "btn_save": "Simpan ke Database"
     }
+  },
+  "guide": {
+    "title": "Panduan Penggunaan CDSS",
+    "step1_title": "Pilih Modul Evaluasi",
+    "step1_desc": "Pada halaman utama (Kalkulator Klinis), pilih salah satu dari tiga tab yang tersedia sesuai kebutuhan klinis pasien: <b>AI Prediksi Mortalitas</b>, <b>AI Prediksi Lama Rawat</b>, atau <b>Rekomendasi Dosis Klinis</b>.",
+    "step2_title": "Input Parameter Klinis",
+    "step2_desc": "Masukkan data klinis pasien yang didapat dari rekam medis atau pemeriksaan laboratorium terbaru. Anda dapat menggunakan fitur <b>Hitung Otomatis</b> untuk kalkulasi skor CTP dan GFR (CKD-EPI 2021) jika parameter penyusunnya tersedia, atau memasukkannya secara manual.",
+    "step3_title": "Pilih Obat (Khusus Modul Dosis)",
+    "step3_desc": "Jika menggunakan modul Rekomendasi Dosis, centang obat-obatan yang direncanakan untuk dievaluasi, lalu tandai jika terdapat komplikasi akut penyerta (seperti AKI, Sepsis, atau Hepatorenal Syndrome).",
+    "step4_title": "Analisis & Verifikasi Profesional",
+    "step4_desc": "Klik tombol proses untuk mengirim data ke server kecerdasan buatan. <b>Penting:</b> Hasil yang ditampilkan oleh sistem (probabilitas maupun rentang dosis) bersifat panduan pendukung keputusan. Lakukan verifikasi akhir berdasarkan penilaian medis profesional Anda."
+  },
+  "team": {
+    "title": "Tim Peneliti & Pengembang",
+    "affil_farmasi": "Fakultas Farmasi, Universitas Andalas",
+    "affil_unand": "Universitas Andalas",
+    "affil_itb": "Teknik Informatika, Institut Teknologi Bandung",
+    "btn_email": "Email",
+    "support_title": "Dukungan & Kolaborasi",
+    "support_desc": "Apakah Anda memiliki pertanyaan umum terkait proyek riset ini, menemukan masalah (<i>bug</i>) pada aplikasi, atau tertarik untuk berkolaborasi lebih lanjut? Jangan ragu untuk mengirimkan pesan kepada kami.",
+    "btn_contact": "Kirim Email ke Tim Riset"
   }
 }

@@ -138,23 +138,25 @@ export default function ClientHome({
               <div className="flex bg-gray-100 p-1 rounded-lg shadow-inner">
                 <button
                   onClick={() => switchLanguage("id")}
-                  className={`px-3 py-1.5 text-xs font-extrabold rounded-md transition-all duration-300 ${
+                  className={`flex items-center gap-2 px-3 py-1.5 text-xs font-extrabold rounded-md transition-all duration-300 ${
                     lang === "id"
                       ? "bg-white text-red-900 shadow-sm ring-1 ring-gray-200/50"
                       : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  ID
+                  <span className="fi fi-id text-sm rounded-[2px] overflow-hidden drop-shadow-sm"></span>
+                  <span>ID</span>
                 </button>
                 <button
                   onClick={() => switchLanguage("en")}
-                  className={`px-3 py-1.5 text-xs font-extrabold rounded-md transition-all duration-300 ${
+                  className={`flex items-center gap-2 px-3 py-1.5 text-xs font-extrabold rounded-md transition-all duration-300 ${
                     lang === "en"
                       ? "bg-white text-red-900 shadow-sm ring-1 ring-gray-200/50"
                       : "text-gray-500 hover:text-gray-800"
                   }`}
                 >
-                  EN
+                  <span className="fi fi-gb text-sm rounded-[2px] overflow-hidden drop-shadow-sm"></span>
+                  <span>EN</span>
                 </button>
               </div>
             </div>

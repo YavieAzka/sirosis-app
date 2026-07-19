@@ -81,5 +81,26 @@
       "btn_saving": "Saving...",
       "btn_save": "Save to Database"
     }
+  },
+  "guide": {
+    "title": "CDSS User Guide",
+    "step1_title": "Select Evaluation Module",
+    "step1_desc": "On the main page (Clinical Calculator), choose one of the three available tabs according to the patient's clinical needs: <b>AI Mortality Prediction</b>, <b>AI Length of Stay Prediction</b>, or <b>Clinical Dosage Recommendation</b>.",
+    "step2_title": "Input Clinical Parameters",
+    "step2_desc": "Enter the patient's clinical data obtained from medical records or recent laboratory tests. You can use the <b>Auto-calculate</b> feature for CTP and GFR (CKD-EPI 2021) scores if the constituent parameters are available, or input them manually.",
+    "step3_title": "Select Medications (Dosage Module Only)",
+    "step3_desc": "If using the Dosage Recommendation module, check the medications planned for evaluation, then indicate if there are accompanying acute complications (such as AKI, Sepsis, or Hepatorenal Syndrome).",
+    "step4_title": "Analysis & Professional Verification",
+    "step4_desc": "Click the process button to send data to the artificial intelligence server. <b>Important:</b> The results displayed by the system (both probability and dosage ranges) serve as clinical decision support. Perform final verification based on your professional medical judgment."
+  },
+  "team": {
+    "title": "Research & Development Team",
+    "affil_farmasi": "Faculty of Pharmacy, Andalas University",
+    "affil_unand": "Andalas University",
+    "affil_itb": "Computer Science, Bandung Institute of Technology",
+    "btn_email": "Email",
+    "support_title": "Support & Collaboration",
+    "support_desc": "Do you have general questions regarding this research project, found a bug in the application, or are interested in further collaboration? Do not hesitate to send us a message.",
+    "btn_contact": "Email the Research Team"
   }
 }
