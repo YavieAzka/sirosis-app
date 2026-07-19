@@ -8,7 +8,7 @@ export default function AboutTeam({ dict }: { dict: any }) {
     {
       id: 1,
       name: "Prof. apt. Fatma Sri Wahyuni, Ph.D",
-      role: "Clinical Domain Expert",
+      role: "Pharmacologist",
     },
     {
       id: 2,
