@@ -133,7 +133,7 @@ export default function LosPredictor({ dict }: { dict: any }) {
     };
 
     try {
-      const res = await fetch("/database/save", {
+      const res = await fetch("/api/database/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
