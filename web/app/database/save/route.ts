@@ -1,32 +1,25 @@
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-// TAMBAHAN BARU: Import driver Postgres
-import { Pool } from 'pg';
-import { PrismaPg } from '@prisma/adapter-pg';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
+  prisma: PrismaClient | undefined;
+};
 
 const getPrisma = () => {
   if (!globalForPrisma.prisma) {
-    // 1. Ambil URL Database
-    const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL;
-    
-    // 2. Buat Connection Pool PostgreSQL
+    const connectionString =
+      process.env.DATABASE_URL || process.env.POSTGRES_PRISMA_URL;
     const pool = new Pool({ connectionString });
-    
-    // 3. Masukkan ke dalam Prisma Adapter
     const adapter = new PrismaPg(pool);
-    
-    // 4. Inisialisasi Prisma dengan Adapter (Wajib di Prisma versi terbaru)
     globalForPrisma.prisma = new PrismaClient({ adapter });
   }
   return globalForPrisma.prisma;
-}
+};
 
 export async function POST(request: Request) {
   try {
@@ -36,54 +29,105 @@ export async function POST(request: Request) {
     // 1. VALIDASI TOKEN OTORISASI
     // ==========================================
     const validToken = process.env.SAVE_TOKEN;
-    
     if (!validToken || body.token !== validToken) {
       return NextResponse.json(
-        { error: 'Akses Ditolak: Token otorisasi tidak valid atau kosong.' }, 
-        { status: 401 }
+        { error: "Akses Ditolak: Token otorisasi tidak valid atau kosong." },
+        { status: 401 },
       );
     }
 
     // ==========================================
-    // 2. FILTER & PENYESUAIAN SCHEMA (ANTI-CRASH)
+    // 2. PEMISAHAN DATA (Demografi vs AI vs Fitur Klinis)
     // ==========================================
-    const { 
-      token, 
-      ctp_encoded, 
-      probability, 
+    const {
+      token,
+      // Variabel Hasil Model AI (Sesuaikan dengan key dari Python)
+      probability,
+      predicted_class,
+      base_value,
+      shap_contributions,
+      // Variabel Model LoS (Jika ada)
       probability_los,
-      ctp_bilirubin, ctp_albumin, ctp_inr, ctp_ascites, ctp_eh, 
-      ...patientData 
+      predicted_days,
+
+      // Data Identitas Pasien (Opsional dari form)
+      nama_pasien,
+      rekam_medis,
+
+      // Sisanya otomatis akan masuk ke dalam objek featuresInput
+      ...featuresInput
     } = body;
 
-    // Generate 'patient_id' otomatis
-    patientData.patient_id = `PAT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    // Transformasi fitur klinis bawaan Anda
+    if (featuresInput.ctp_encoded === 1) featuresInput.ctp = "A";
+    if (featuresInput.ctp_encoded === 2) featuresInput.ctp = "B";
+    if (featuresInput.ctp_encoded === 3) featuresInput.ctp = "C";
 
-    // Mengisi 'lama_rawat' dengan default 0 agar tidak error jika form kosong
-    if (patientData.lama_rawat === undefined || patientData.lama_rawat === null) {
-      patientData.lama_rawat = 0; 
+    if (
+      featuresInput.lama_rawat === undefined ||
+      featuresInput.lama_rawat === null
+    ) {
+      featuresInput.lama_rawat = 0;
     }
 
-    if (ctp_encoded === 1) patientData.ctp = 'A';
-    if (ctp_encoded === 2) patientData.ctp = 'B';
-    if (ctp_encoded === 3) patientData.ctp = 'C';
-
     // ==========================================
-    // 3. PROSES SIMPAN PRISMA -> SUPABASE
+    // 3. PROSES SIMPAN PRISMA (RELASIONAL)
     // ==========================================
     const prisma = getPrisma();
-    
-    const newPatient = await prisma.patient.create({
-      data: patientData
+
+    // A. Buat Record Pasien
+    const fallbackId = `PAT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const patientRecord = await prisma.patient.create({
+      data: {
+        name: nama_pasien || "Anonim",
+        medicalRecordNumber: rekam_medis || fallbackId,
+      },
     });
 
-    return NextResponse.json({ success: true, data: newPatient });
+    // B. Buat Record Prediksi Mortalitas (Jika data probability tersedia)
+    let mortalityRecord = null;
+    if (probability !== undefined) {
+      mortalityRecord = await prisma.mortalityPrediction.create({
+        data: {
+          patientId: patientRecord.id,
+          featuresInput: featuresInput, // Prisma otomatis mengubah ini menjadi JSON
+          probability: probability,
+          predictedClass: predicted_class || null,
+          baseValue: base_value || null,
+          shapContributions: shap_contributions || null,
+        },
+      });
+    }
 
+    // C. Buat Record Prediksi LoS (Jika data probability_los / predicted_days tersedia)
+    let losRecord = null;
+    if (probability_los !== undefined || predicted_days !== undefined) {
+      losRecord = await prisma.losPrediction.create({
+        data: {
+          patientId: patientRecord.id,
+          featuresInput: featuresInput, // Prisma otomatis mengubah ini menjadi JSON
+          probabilityLos: predicted_days || probability_los,
+          meldScore: Number(featuresInput.meldScore) || 0,
+          // Tambahkan baseValue dan shapContributions jika model LoS juga menghasilkannya
+        },
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        patient: patientRecord,
+        mortality: mortalityRecord,
+        los: losRecord,
+      },
+    });
   } catch (error: any) {
     console.error("Prisma Save Error:", error);
     return NextResponse.json(
-      { error: `Gagal menyimpan ke database. Detail: ${error.message || 'Kesalahan Server Internal'}` }, 
-      { status: 500 }
+      {
+        error: `Gagal menyimpan ke database. Detail: ${error.message || "Kesalahan Server Internal"}`,
+      },
+      { status: 500 },
     );
   }
 }

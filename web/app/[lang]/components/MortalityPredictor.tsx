@@ -162,6 +162,10 @@ export default function MortalityPredictor({ dict }: { dict: any }) {
       ctp_encoded: Number(formDataMort.ctp_encoded),
       probability: resultMort?.probability,
       token: tokenInput,
+      // TAMBAHAN: Ekstrak semua detail AI lainnya agar tersimpan rapi di database
+      predicted_class: resultMort?.predicted_class,
+      base_value: resultMort?.base_value,
+      shap_contributions: resultMort?.shap_contributions,
     };
 
     try {

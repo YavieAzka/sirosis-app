@@ -128,6 +128,8 @@ export default function LosPredictor({ dict }: { dict: any }) {
       ctp_encoded: Number(formDataLos.ctp_encoded),
       probability_los: predictionLos,
       token: tokenInput,
+      // TAMBAHAN: Kirimkan meldScore yang sudah dihitung agar ditangkap oleh route.ts
+      meldScore: meldResult !== null ? Number(meldResult) : 0,
     };
 
     try {
