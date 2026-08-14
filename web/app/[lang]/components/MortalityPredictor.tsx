@@ -1,6 +1,7 @@
 // File: components/MortalityPredictor.tsx
 import React, { useState, useEffect, useCallback } from "react";
-import { ChevronDown } from "lucide-react";
+// 1. Tambahkan impor Eye dan EyeOff di sini
+import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import {
   CtpParams,
   hitungSkorCtp,
@@ -34,6 +35,9 @@ const FEATURE_LABELS: Record<string, string> = {
 
 export default function MortalityPredictor({ dict }: { dict: any }) {
   const [tokenInput, setTokenInput] = useState("");
+  // 2. Tambahkan state untuk mengontrol tampilan password
+  const [showToken, setShowToken] = useState(false);
+
   const [formDataMort, setFormDataMort] = useState({
     komor_sepsis: 0,
     urea_baseline: "",
@@ -121,8 +125,6 @@ export default function MortalityPredictor({ dict }: { dict: any }) {
     console.log("[DEBUG] Memulai request prediksi ke Model AI...");
     console.log("Data Payload (Raw JSON):", JSON.stringify(payload, null, 2));
 
-    // console.table akan menampilkan data dalam bentuk tabel yang sangat
-    // mudah dibaca di tab Console pada browser (Chrome/Edge/Firefox)
     console.table(payload);
     console.log("===========================================");
     try {
@@ -162,7 +164,6 @@ export default function MortalityPredictor({ dict }: { dict: any }) {
       ctp_encoded: Number(formDataMort.ctp_encoded),
       probability: resultMort?.probability,
       token: tokenInput,
-      // TAMBAHAN: Ekstrak semua detail AI lainnya agar tersimpan rapi di database
       predicted_class: resultMort?.predicted_class,
       base_value: resultMort?.base_value,
       shap_contributions: resultMort?.shap_contributions,
@@ -179,6 +180,7 @@ export default function MortalityPredictor({ dict }: { dict: any }) {
         alert("Data Mortalitas berhasil disimpan!");
         setShowModalMort(false);
         setTokenInput("");
+        setShowToken(false); // Reset token visibility saat tersimpan
       } else {
         alert(data.error || "Gagal menyimpan. Pastikan token benar.");
       }
@@ -189,9 +191,7 @@ export default function MortalityPredictor({ dict }: { dict: any }) {
     }
   };
 
-  // Gunakan useCallback dengan dependensi kosong [] agar referensi fungsi tidak pernah berubah
   const handleInrChange = useCallback((val: number | null) => {
-    // Gunakan 'prev' agar kita tidak bergantung pada state formDataMort saat ini
     setFormDataMort((prev) => ({
       ...prev,
       inr_baseline: val !== null ? String(val) : "",
@@ -255,7 +255,6 @@ export default function MortalityPredictor({ dict }: { dict: any }) {
           </div>
 
           <div className="col-span-1 md:col-span-2">
-            {/* Jangan lupa untuk menambahkan dict juga ke komponen anak di bawah jika diperlukan */}
             <CtpCalculator
               active={autoCtpMort}
               onToggle={setAutoCtpMort}
@@ -512,7 +511,6 @@ export default function MortalityPredictor({ dict }: { dict: any }) {
                       const impactValue = (
                         Math.abs(shap.contribution) * 100
                       ).toFixed(1);
-                      // Asumsi: Anda juga bisa menerjemahkan FEATURE_LABELS di utils, tapi untuk sekarang kita biarkan seperti aslinya
                       const humanLabel =
                         FEATURE_LABELS[shap.feature] || shap.feature;
                       return (
@@ -545,20 +543,37 @@ export default function MortalityPredictor({ dict }: { dict: any }) {
                 </div>
               )}
 
+              {/* 3. Penyesuaian UI input Otorisasi Simpan Data di sini */}
               <div className="mb-5 bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wider text-center">
                   {dict.mortality?.modal?.auth_title || "Otorisasi Simpan Data"}
                 </label>
-                <input
-                  type="password"
-                  placeholder={
-                    dict.mortality?.modal?.auth_placeholder ||
-                    "Masukkan Token Rahasia"
-                  }
-                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 text-center tracking-widest bg-white"
-                  value={tokenInput}
-                  onChange={(e) => setTokenInput(e.target.value)}
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type={showToken ? "text" : "password"}
+                    placeholder={
+                      dict.mortality?.modal?.auth_placeholder ||
+                      "Masukkan Token Rahasia"
+                    }
+                    className="w-full border border-gray-300 rounded-lg p-3 pr-10 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 text-center tracking-widest bg-white transition-colors"
+                    value={tokenInput}
+                    onChange={(e) => setTokenInput(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowToken(!showToken)}
+                    className="absolute right-3 text-gray-500 hover:text-gray-800 transition-colors focus:outline-none"
+                    aria-label={
+                      showToken ? "Sembunyikan token" : "Tampilkan token"
+                    }
+                  >
+                    {showToken ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="flex gap-3">
@@ -566,6 +581,7 @@ export default function MortalityPredictor({ dict }: { dict: any }) {
                   onClick={() => {
                     setShowModalMort(false);
                     setTokenInput("");
+                    setShowToken(false); // Reset token visibility saat ditutup
                   }}
                   className="flex-1 bg-white hover:bg-gray-50 border border-gray-300 py-3 rounded-xl font-bold transition-colors"
                 >

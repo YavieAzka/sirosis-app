@@ -1,5 +1,7 @@
 // File: components/LosPredictor.tsx
 import React, { useState, useEffect } from "react";
+// 1. Tambahkan impor Eye dan EyeOff dari lucide-react
+import { Eye, EyeOff } from "lucide-react";
 import {
   CtpParams,
   hitungSkorCtp,
@@ -9,6 +11,9 @@ import CtpCalculator from "./CtpCalculator";
 
 export default function LosPredictor({ dict }: { dict: any }) {
   const [tokenInput, setTokenInput] = useState("");
+  // 2. Tambahkan state untuk mengontrol tampilan password
+  const [showToken, setShowToken] = useState(false);
+
   const [formDataLos, setFormDataLos] = useState({
     komor_sepsis: 0,
     komp_eh: 0,
@@ -143,6 +148,7 @@ export default function LosPredictor({ dict }: { dict: any }) {
         alert("Data LoS berhasil disimpan!");
         setShowModalLos(false);
         setTokenInput("");
+        setShowToken(false); // Reset token visibility saat tersimpan
       } else {
         alert(data.error || "Gagal menyimpan. Pastikan token benar.");
       }
@@ -420,17 +426,34 @@ export default function LosPredictor({ dict }: { dict: any }) {
                 </p>
               </div>
 
+              {/* 3. Penyesuaian UI input Otorisasi Simpan Data di sini */}
               <div className="mb-5 bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wider text-center">
                   Otorisasi Simpan Data
                 </label>
-                <input
-                  type="password"
-                  placeholder="Masukkan Token Rahasia"
-                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 text-center tracking-widest bg-white"
-                  value={tokenInput}
-                  onChange={(e) => setTokenInput(e.target.value)}
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type={showToken ? "text" : "password"}
+                    placeholder="Masukkan Token Rahasia"
+                    className="w-full border border-gray-300 rounded-lg p-3 pr-10 text-sm focus:ring-2 focus:ring-red-800 focus:border-red-800 text-center tracking-widest bg-white transition-colors"
+                    value={tokenInput}
+                    onChange={(e) => setTokenInput(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowToken(!showToken)}
+                    className="absolute right-3 text-gray-500 hover:text-gray-800 transition-colors focus:outline-none"
+                    aria-label={
+                      showToken ? "Sembunyikan token" : "Tampilkan token"
+                    }
+                  >
+                    {showToken ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="flex gap-3">
@@ -438,6 +461,7 @@ export default function LosPredictor({ dict }: { dict: any }) {
                   onClick={() => {
                     setShowModalLos(false);
                     setTokenInput("");
+                    setShowToken(false); // Reset token visibility saat ditutup
                   }}
                   className="flex-1 bg-white hover:bg-gray-50 border border-gray-300 py-3 rounded-xl font-bold transition-colors"
                 >
