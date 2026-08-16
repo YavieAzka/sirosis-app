@@ -217,9 +217,12 @@ def rekom_ampisilin_sulbaktam(p: KondisiPasien) -> RekomendasiDosis:
     peringatan = ["Monitor Cr, fungsi hati; hentikan bila AKI atau cholestasis berat."]
     status, dosis, alasan = "Use / Reduce if CKD", "", ""
 
-    if p.gfr >= 30:
+    if p.gfr >= 50:
         dosis = "1,5 - 3 g IV tiap 6 jam (dosis standar)"
-        alasan = "Fungsi ginjal memadai (CrCl >= 30 mL/min)."
+        alasan = "Fungsi ginjal memadai (CrCl >= 50 mL/min)."
+    elif 30 <= p.gfr < 50:
+        dosis = "1,5 - 3 g IV tiap 8-12 jam"
+        alasan = "Fungsi ginjal menurun (CrCl 30-49 mL/min)."
     elif 15 <= p.gfr < 30:
         dosis = "1,5 - 3 g IV tiap 12 jam"
         alasan = "Fungsi ginjal menurun (CrCl 15-29 mL/min)."
@@ -227,8 +230,8 @@ def rekom_ampisilin_sulbaktam(p: KondisiPasien) -> RekomendasiDosis:
         dosis = "1,5 - 3 g IV tiap 24 jam"
         alasan = "Fungsi ginjal menurun berat (CrCl < 15 mL/min)."
 
-    if p.ctp == 'C' and p.gfr < 30:
-        dosis += " (Reduce dose 50% karena Child C & CrCl < 30)"
+    if p.gfr < 30:
+        dosis += " (Reduce dose 50% karena CrCl < 30)"
 
     return RekomendasiDosis("Ampisilin-Sulbaktam", status, dosis, alasan, peringatan)
 
@@ -272,7 +275,7 @@ def rekom_levofloxacin(p: KondisiPasien) -> RekomendasiDosis:
     else:
         status = "Use / Monitor"
         dosis = "Dosis standar (berdasarkan CrCl)"
-        alasan = "Child-Pugh A, monitor enzim hati."
+        alasan = f"Child-Pugh {p.ctp}, monitor enzim hati."
 
     if status != "Avoid":
         if p.gfr >= 50:
