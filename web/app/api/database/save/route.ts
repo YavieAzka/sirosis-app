@@ -106,7 +106,7 @@ export async function POST(request: Request) {
         data: {
           patient: { connect: { id: patientRecord.id } },
           featuresInput: featuresInput, // Prisma otomatis mengubah ini menjadi JSON
-          probabilityLos: predicted_days || probability_los,
+          probabilityLos: predicted_days ?? probability_los ?? 0,
           meldScore: Number(featuresInput.meldScore) || 0,
           // Tambahkan baseValue dan shapContributions jika model LoS juga menghasilkannya
         },
