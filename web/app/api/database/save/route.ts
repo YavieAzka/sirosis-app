@@ -92,8 +92,8 @@ export async function POST(request: Request) {
           patient: { connect: { id: patientRecord.id } },
           featuresInput: featuresInput, // Prisma otomatis mengubah ini menjadi JSON
           probability: probability,
-          predictedClass: predicted_class || null,
-          baseValue: base_value || null,
+          predictedClass: predicted_class ?? 0,
+          baseValue: base_value ?? 0,
           shapContributions: shap_contributions || null,
         },
       });
