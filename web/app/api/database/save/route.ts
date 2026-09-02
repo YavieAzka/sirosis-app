@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     if (probability !== undefined) {
       mortalityRecord = await prisma.mortalityPrediction.create({
         data: {
-          patientId: patientRecord.id,
+          patient: { connect: { id: patientRecord.id } },
           featuresInput: featuresInput, // Prisma otomatis mengubah ini menjadi JSON
           probability: probability,
           predictedClass: predicted_class || null,
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
     if (probability_los !== undefined || predicted_days !== undefined) {
       losRecord = await prisma.losPrediction.create({
         data: {
-          patientId: patientRecord.id,
+          patient: { connect: { id: patientRecord.id } },
           featuresInput: featuresInput, // Prisma otomatis mengubah ini menjadi JSON
           probabilityLos: predicted_days || probability_los,
           meldScore: Number(featuresInput.meldScore) || 0,
