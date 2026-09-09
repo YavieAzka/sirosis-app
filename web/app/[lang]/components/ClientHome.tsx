@@ -218,7 +218,7 @@ export default function ClientHome({
         {/* Teruskan juga dict ke komponen anak agar mereka bisa menggunakannya */}
         {currentView === "app" && <MainApp dict={dict} />}
         {currentView === "guide" && <UserGuide dict={dict} />}
-        {currentView === "methodology" && <Methodology dict={dict} />}
+        {currentView === "methodology" && <Methodology dict={dict} lang={lang} />}
         {currentView === "about" && <AboutTeam dict={dict} />}
       </div>
 

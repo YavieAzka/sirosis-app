@@ -156,5 +156,30 @@
     "specialAttention": "Special Attention:",
     "errorSystem": "A dose system error occurred.",
     "errorNetwork": "Failed to connect to the recommendation server."
+  },
+  "methodology": {
+    "title": "Research Methodology & AI Framework",
+    "subtitle": "Development and internal validation of an Explainable Artificial Intelligence (XAI) model for personalized drug dose recommendations and clinical outcome prediction in hospitalized patients with liver cirrhosis at Dr. M. Djamil General Hospital, Padang.",
+    "badges": {
+      "cohort": "Cohort: 583 Hospitalized Patients",
+      "ethics": "Ethics: Dr. M. Djamil Hospital REC (Ref: DP.04.03/D.XVI.2.3/1027/2025)",
+      "auroc": "Mortality AUROC: 0.8391 (Random Forest)",
+      "concordance": "Dose Concordance: 84.2% Clinical Adjudication"
+    },
+    "tabs": {
+      "overview": "Overview & Pipeline",
+      "cohort": "Cohort Characteristics",
+      "hybrid_ai": "Hybrid AI Architecture",
+      "metrics": "Model Performance",
+      "shap": "Explainable AI (SHAP)",
+      "dosing": "Dose Evaluation & Concordance",
+      "references": "Clinical Guidelines & References"
+    },
+    "search_placeholder": "Search references by author, title, journal, or DOI...",
+    "filter_all": "All Categories",
+    "filter_guideline": "Clinical Practice Guidelines",
+    "filter_pk": "Pharmacotherapy & Dosing",
+    "filter_ml": "Machine Learning & AI",
+    "filter_prognosis": "Prognosis & Risk Scores"
   }
 }

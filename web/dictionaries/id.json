@@ -103,5 +103,30 @@
     "support_title": "Dukungan & Kolaborasi",
     "support_desc": "Apakah Anda memiliki pertanyaan umum terkait proyek riset ini, menemukan masalah (<i>bug</i>) pada aplikasi, atau tertarik untuk berkolaborasi lebih lanjut? Jangan ragu untuk mengirimkan pesan kepada kami.",
     "btn_contact": "Kirim Email ke Tim Riset"
+  },
+  "methodology": {
+    "title": "Metodologi Riset & Kerangka AI",
+    "subtitle": "Pengembangan dan validasi internal model Explainable Artificial Intelligence (XAI) untuk rekomendasi dosis obat terpersonalisasi dan stratifikasi prognosis klinis pada pasien sirosis hati rawat inap di RSUP Dr. M. Djamil Padang.",
+    "badges": {
+      "cohort": "Kohort: 583 Pasien Rawat Inap",
+      "ethics": "Etik: KEPK RSUP Dr. M. Djamil (No. DP.04.03/D.XVI.2.3/1027/2025)",
+      "auroc": "AUROC Mortalitas: 0.8391 (Random Forest)",
+      "concordance": "Konkordansi Dosis: 84.2% Adjudikasi Klinis"
+    },
+    "tabs": {
+      "overview": "Ringkasan & Alur Riset",
+      "cohort": "Karakteristik Kohort",
+      "hybrid_ai": "Arsitektur Hybrid AI",
+      "metrics": "Komparasi Kinerja Model",
+      "shap": "Transparansi AI (SHAP)",
+      "dosing": "Evaluasi & Konkordansi Dosis",
+      "references": "Pedoman Klinis & Referensi"
+    },
+    "search_placeholder": "Cari referensi berdasarkan penulis, judul, jurnal, atau DOI...",
+    "filter_all": "Semua Kategori",
+    "filter_guideline": "Pedoman Praktis Klinis",
+    "filter_pk": "Farmakoterapi & Dosis",
+    "filter_ml": "Machine Learning & AI",
+    "filter_prognosis": "Prognosis & Skor Mortalitas"
   }
 }
