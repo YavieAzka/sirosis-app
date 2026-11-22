@@ -1,0 +1,153 @@
+name: Mobile CI & OTA Patch
+
+on:
+  pull_request:
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-*.yml'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'mobile/src/**'
+      - 'mobile/assets/**'
+      - 'mobile/package*.json'
+      - 'mobile/app.json'
+      - 'mobile/eas.json'
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: 'EAS Update branch/channel target'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - preview
+          - production
+          - development
+      message:
+        description: 'Custom OTA patch message shown in EAS dashboard'
+        required: false
+        default: ''
+        type: string
+
+concurrency:
+  group: mobile-ci-ota-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, Lint & Jest Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npm run typecheck
+
+      - name: ESLint check
+        run: npm run lint
+
+      - name: Run Jest unit & integration tests
+        run: npm test -- --maxWorkers=2 --ci
+
+      - name: Validate Expo public config
+        run: npx expo config --type public > /dev/null
+
+  publish-ota:
+    name: Publish OTA Patch (EAS Update)
+    needs: verify
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout repository with history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Expo & EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Validate EAS project linkage & token
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "ERROR: EXPO_TOKEN secret is not configured in GitHub Repository Settings > Secrets and variables > Actions." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          PROJECT_ID=$(node -e "const c = require('./app.json'); console.log(c.expo?.extra?.eas?.projectId || '')")
+          if [ -z "$PROJECT_ID" ]; then
+            echo "ERROR: expo.extra.eas.projectId is missing in mobile/app.json. Run 'npx eas init' locally inside mobile/ and commit app.json first." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Check for native / runtimeVersion changes
+        id: native_check
+        run: |
+          if git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -qE '^mobile/(app\.json|package\.json)$'; then
+            echo "native_touched=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "native_touched=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish OTA update bundle to EAS
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          UPDATE_BRANCH: ${{ inputs.channel || 'preview' }}
+          UPDATE_MSG: ${{ inputs.message || github.event.head_commit.message || 'Automated mobile OTA patch' }}
+        run: |
+          npx eas-cli update \
+            --branch "$UPDATE_BRANCH" \
+            --message "$UPDATE_MSG" \
+            --non-interactive \
+            --json > ota-result.json
+          node -e "
+            const fs = require('fs');
+            const summary = JSON.parse(fs.readFileSync('ota-result.json', 'utf8'));
+            console.log('Published EAS Update group(s):', JSON.stringify(summary));
+          "
+
+      - name: Write OTA release summary
+        if: always()
+        run: |
+          echo "### CirrhoSmart AI Android — OTA Update Published" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Branch/Channel: \`${{ inputs.channel || 'preview' }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.native_check.outputs.native_touched }}" = "true" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "> **Notice:** \`mobile/app.json\` or \`mobile/package.json\` changed in this commit. If native dependencies or \`version\` changed, trigger the **Mobile Internal APK Build** workflow and host the new \`.apk\` on your website." >> "$GITHUB_STEP_SUMMARY"
+          fi

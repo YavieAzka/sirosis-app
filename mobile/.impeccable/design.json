@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-16T12:58:00+07:00",
+  "title": "Design System: CirrhoSmart AI Android",
+  "extensions": {
+    "colorMeta": {
+      "medical-maroon": {
+        "role": "primary",
+        "displayName": "Medical Maroon",
+        "canonical": "#7F1D1D",
+        "tonalRamp": ["#450A0A", "#7F1D1D", "#991B1B", "#B91C1C", "#DC2626", "#F87171", "#FCA5A5", "#FEE2E2"]
+      },
+      "ward-slate-secondary": {
+        "role": "secondary",
+        "displayName": "Ward Slate Rose",
+        "canonical": "#6B4C4E",
+        "tonalRamp": ["#2A1517", "#4E3234", "#6B4C4E", "#8A6A6C", "#AC8F91", "#CDB6B8", "#E2BEC0", "#F5E6E7"]
+      },
+      "canvas-light": {
+        "role": "neutral",
+        "displayName": "Clinical Cool Slate",
+        "canonical": "#F8FAFC",
+        "tonalRamp": ["#0F172A", "#334155", "#475569", "#64748B", "#94A3B8", "#CBD5E1", "#E2E8F0", "#F8FAFC"]
+      },
+      "clinical-safe": {
+        "role": "semantic-safe",
+        "displayName": "Clinical Emerald",
+        "canonical": "#047857",
+        "tonalRamp": ["#022C22", "#064E3B", "#047857", "#059669", "#10B981", "#34D399", "#A7F3D0", "#ECFDF5"]
+      },
+      "clinical-warning": {
+        "role": "semantic-warning",
+        "displayName": "Clinical Amber",
+        "canonical": "#B45309",
+        "tonalRamp": ["#451A03", "#78350F", "#B45309", "#D97706", "#F59E0B", "#FBBF24", "#FDE68A", "#FFFBEB"]
+      },
+      "clinical-danger": {
+        "role": "semantic-danger",
+        "displayName": "Clinical Crimson",
+        "canonical": "#B91C1C",
+        "tonalRamp": ["#450A0A", "#7F1D1D", "#B91C1C", "#DC2626", "#EF4444", "#F87171", "#FECACA", "#FEF2F2"]
+      },
+      "clinical-info": {
+        "role": "semantic-info",
+        "displayName": "Clinical Cobalt",
+        "canonical": "#1D4ED8",
+        "tonalRamp": ["#172554", "#1E3A8A", "#1D4ED8", "#2563EB", "#3B82F6", "#60A5FA", "#BFDBFE", "#EFF6FF"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display Scale", "purpose": "Numeric display readouts and primary clinical emphasis." },
+      "headline": { "displayName": "Headline Scale", "purpose": "Section heroes and screen module titles." },
+      "title": { "displayName": "Title Scale", "purpose": "Top app bars, modal headers, and card section titles." },
+      "body": { "displayName": "Body Scale", "purpose": "Clinical copy, instructions, rationales, and bibliography." },
+      "label": { "displayName": "Label Scale", "purpose": "Form field captions, navigation tabs, and status chips." }
+    },
+    "shadows": [
+      {
+        "name": "tonal-flat",
+        "value": "none",
+        "purpose": "Depth is conveyed via Material 3 surface container tonal luminance and 1dp hairline outlineVariant borders."
+      }
+    ],
+    "motion": [
+      { "name": "fast", "value": "150ms", "purpose": "Micro state changes, button presses, and switch toggles." },
+      { "name": "standard", "value": "200ms", "purpose": "Operate mode screen and pane transitions." },
+      { "name": "emphasized", "value": "250ms", "purpose": "Bottom sheet reveal and dismissal." },
+      { "name": "reduced", "value": "0ms", "purpose": "Honor OS Remove Animations / Reduce Motion setting." }
+    ],
+    "breakpoints": [
+      { "name": "compact", "value": "0-599dp" },
+      { "name": "medium", "value": "600-839dp" },
+      { "name": "expanded", "value": "840dp+" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Action Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Filled Medical Maroon primary clinical execution CTA (48dp min height).",
+      "html": "<button class=\"ds-btn-primary\">Analisis Probabilitas Mortalitas</button>",
+      "css": ".ds-btn-primary { min-height: 48px; padding: 12px 16px; border-radius: 12px; border: 1px solid #7F1D1D; background: #7F1D1D; color: #FFFFFF; font-family: sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; } .ds-btn-primary:hover, .ds-btn-primary:active { background: #450A0A; } .ds-btn-primary:focus-visible { outline: 2px solid #7F1D1D; outline-offset: 2px; }"
+    },
+    {
+      "name": "Tonal Clinical Button",
+      "kind": "button",
+      "refersTo": "button-tonal",
+      "description": "Secondary high-affordance clinical CTA (e.g. Pilih Semua / Expand Full View).",
+      "html": "<button class=\"ds-btn-tonal\">Pilih Semua</button>",
+      "css": ".ds-btn-tonal { min-height: 48px; padding: 12px 16px; border-radius: 12px; border: 1px solid #FEE2E2; background: #FEE2E2; color: #450A0A; font-family: sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; } .ds-btn-tonal:hover, .ds-btn-tonal:focus-visible { border-color: #7F1D1D; }"
+    },
+    {
+      "name": "Clinical Number Field",
+      "kind": "input",
+      "refersTo": "input-clinical",
+      "description": "Outlined decimal laboratory input with unit suffix and tabular-nums alignment.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\">Urea Baseline</label><div class=\"ds-input-wrap\"><input class=\"ds-input\" value=\"96\" /><span class=\"ds-unit\">mg/dL</span></div></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 4px; font-family: sans-serif; } .ds-field-label { font-size: 12px; font-weight: 600; color: #475569; } .ds-input-wrap { min-height: 48px; display: flex; align-items: center; padding: 0 12px; border: 1px solid #CBD5E1; border-radius: 12px; background: #FFFFFF; gap: 8px; } .ds-input-wrap:focus-within { border: 1.5px solid #7F1D1D; } .ds-input { border: none; outline: none; flex: 1; font-family: monospace; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; color: #0F172A; background: transparent; } .ds-unit { font-size: 12px; font-weight: 600; color: #475569; }"
+    },
+    {
+      "name": "Elevated Clinical Card",
+      "kind": "card",
+      "refersTo": "card-elevated",
+      "description": "Primary structured white container with 1dp outlineVariant stroke and 16dp padding.",
+      "html": "<div class=\"ds-card\"><strong>AI Prediksi Mortalitas</strong><p>Parameter laboratorium dan komorbiditas pasien.</p></div>",
+      "css": ".ds-card { background: #FFFFFF; border: 1px solid #CBD5E1; border-radius: 16px; padding: 16px; font-family: sans-serif; color: #0F172A; display: flex; flex-direction: column; gap: 8px; } .ds-card p { margin: 0; font-size: 14px; color: #475569; }"
+    },
+    {
+      "name": "Navigation Destination Pill",
+      "kind": "nav",
+      "refersTo": "nav-pill-active",
+      "description": "Material 3 active destination pill for Navigation Bar and Navigation Rail.",
+      "html": "<div class=\"ds-nav-item\"><span class=\"ds-nav-pill\">Mortalitas</span></div>",
+      "css": ".ds-nav-item { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; font-family: sans-serif; } .ds-nav-pill { min-width: 56px; min-height: 32px; padding: 4px 14px; border-radius: 9999px; background: #FEE2E2; color: #450A0A; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Bedside Precision Instrument",
+    "overview": "CirrhoSmart AI Android translates hospital hepatology risk prediction and deterministic drug safety checks into a high-contrast Material Design 3 bedside utility. Every screen separates Operate mode (mortality prediction, length-of-stay stratification, and renal/hepatic dose evaluation) from Read mode (research methodology, 4-step user guide, and 44 cited references), prioritizing unambiguous numeric alignment, fast thumb reachability during ward rounds, and zero ambiguity under fluorescent ward glare or night-shift lighting.",
+    "keyCharacteristics": [
+      "Native Android Material Design 3 architecture built with custom React Native primitives and responsive Window Size Class tokens (compact, medium, expanded).",
+      "First-class Light and Dark schemes maintaining WCAG AA (>= 4.5:1) contrast across every clinical status banner and input label.",
+      "Strict tabular-nums alignment across all laboratory parameters, AUROC scores, SHAP divergence bars, UNOS MELD badges, and dosing bounds.",
+      "Minimum 48 dp touch targets separated by at least 8 dp gaps on every interactive control."
+    ],
+    "rules": [
+      {
+        "name": "The Semantic Color Discipline Rule",
+        "body": "Never spend emerald, amber, or red hues as decorative card chrome—clinical color bands are strictly bound to risk stratification, drug safety classification, or inline error/success feedback.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Precision Rule",
+        "body": "Every predicted probability, MELD score, eGFR value, MAP calculation, INR readout, cohort statistic, and dosing bound MUST use one of the four numeric* typography roles (fontVariant: ['tabular-nums']).",
+        "section": "typography"
+      },
+      {
+        "name": "The Measured Separation Rule",
+        "body": "Related inputs inside a ClinicalCard group at 12dp–16dp gaps, while distinct clinical sections and headings maintain greater breathing room above (24dp) than below (4dp–8dp).",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat-Tonal Discipline Rule",
+        "body": "Convey hierarchy via luminance contrast between canvas and surface containers plus hairline 1dp borders—never invent decorative box shadows or thick left-edge accent stripes (border-left > 1dp).",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do enforce minimum 48x48 dp hit targets (TOUCH_TARGET.MIN_SIZE_DP) and >= 8 dp spacing (TOUCH_TARGET.MIN_GAP_DP) on every touchable element.",
+      "Do test and maintain both Light (#F8FAFC) and Dark (#111318) color schemes with WCAG AA contrast (>= 4.5:1) using colors.* semantic tokens exclusively.",
+      "Do normalize comma decimals via parseLocaleNumber() before client validation and API payload serialization, and apply UNOS 1.0 floor / 4.0 mg/dL creatinine cap on hitungMeldUnos().",
+      "Do support Android system Reduce Motion (MOTION.REDUCED_MS = 0) across animated modals and transitions while keeping active motion crisp (150-250ms).",
+      "Do preserve keyboard & portrait/landscape responsiveness (softwareKeyboardLayoutMode: resize, orientation: default)."
+    ],
+    "donts": [
+      "Don't hardcode raw hex color strings inside component TSX files or bypass ThemeProvider tokens.",
+      "Don't render wide horizontal data tables with multi-column clipping on phones (< 600 dp)—switch cleanly to stacked key-value strips on compact screens.",
+      "Don't clear user inputs, close modals, or emit generic pop-up alert() calls on validation errors or 401 authorization failures—render inline InlineAlert feedback in place.",
+      "Don't mix Cupertino UI widgets, browser <select> metaphors, emojis, or decorative eyebrows/kickers above headings into Material 3 surfaces.",
+      "Don't perform local mock predictions or override server dosing rules; display server responses faithfully with explicit mandatory clinical review disclaimers."
+    ]
+  }
+}

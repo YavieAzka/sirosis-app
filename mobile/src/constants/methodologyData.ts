@@ -1,0 +1,1197 @@
+export type ReferenceCategory =
+  | 'guideline'
+  | 'pk_dosing'
+  | 'ml_ai'
+  | 'prognosis'
+  | 'general';
+
+export type ReferenceCategoryFilter = 'all' | ReferenceCategory;
+
+export interface ClinicalReference {
+  id: number;
+  authors: string;
+  year: number;
+  title: string;
+  journal: string;
+  volumeIssuePages?: string;
+  doi?: string;
+  url?: string;
+  category: ReferenceCategory;
+  highlight?: boolean;
+}
+
+export interface MetricRow {
+  metric: string;
+  labelId: string;
+  labelEn: string;
+  descriptionId: string;
+  descriptionEn: string;
+  mortalityRf: string;
+  mortalityXgb: string;
+  losRf: string;
+  losXgb: string;
+  isHeader?: boolean;
+  highlight?: boolean;
+}
+
+export interface CohortCharacteristic {
+  category: string;
+  categoryId: string;
+  categoryEn: string;
+  items: {
+    labelId: string;
+    labelEn: string;
+    value: string;
+    missing?: string;
+  }[];
+}
+
+export interface DoseAppropriatenessItem {
+  drug: string;
+  n: number;
+  appropriateCount: number;
+  appropriatePct: string;
+  inappropriateCount: number;
+  inappropriatePct: string;
+  category: string;
+}
+
+export interface ConcordancePatientCase {
+  patient: number;
+  ctp: 'A' | 'B' | 'C';
+  egfr: number;
+  drug: string;
+  systemRecommendation: string;
+  clinicalLabel: string;
+  agreement: 'Concordant' | 'Discordant' | 'Concordant (direction)';
+}
+
+export const COHORT_CHARACTERISTICS: CohortCharacteristic[] = [
+  {
+    category: 'Demografi Pasien',
+    categoryId: 'Demografi Pasien',
+    categoryEn: 'Patient Demographics',
+    items: [
+      {
+        labelId: 'Usia (Tahun), Rerata ± SD (Median, IQR)',
+        labelEn: 'Age (Years), Mean ± SD (Median, IQR)',
+        value: '55.8 ± 11.7 (57, 49–64)',
+        missing: '2 (0.3%)',
+      },
+      {
+        labelId: 'Jenis Kelamin Laki-laki',
+        labelEn: 'Male Sex',
+        value: '366 (63.1%)',
+        missing: '3 (0.5%)',
+      },
+      {
+        labelId: 'Indeks Massa Tubuh (BMI), kg/m²',
+        labelEn: 'Body Mass Index (BMI), kg/m²',
+        value: '23.3 ± 4.1',
+        missing: '10 (1.7%)',
+      },
+      {
+        labelId: 'Distribusi BMI (Underweight / Normal / Overweight / Obese)',
+        labelEn: 'BMI Distribution (Underweight / Normal / Overweight / Obese)',
+        value: '23 (5.9%) / 276 (71.1%) / 70 (18.0%) / 19 (4.9%)',
+      },
+    ],
+  },
+  {
+    category: 'Tingkat Keparahan Hepatik (CTP & Etiologi)',
+    categoryId: 'Tingkat Keparahan Hepatik (CTP & Etiologi)',
+    categoryEn: 'Hepatic Severity (CTP & Etiology)',
+    items: [
+      {
+        labelId: 'Child-Turcotte-Pugh (CTP) Kelas A',
+        labelEn: 'Child-Turcotte-Pugh (CTP) Class A',
+        value: '62 (12.6%)',
+        missing: 'Total terisi: 494 (84.7%)',
+      },
+      {
+        labelId: 'Child-Turcotte-Pugh (CTP) Kelas B',
+        labelEn: 'Child-Turcotte-Pugh (CTP) Class B',
+        value: '277 (56.1%)',
+      },
+      {
+        labelId: 'Child-Turcotte-Pugh (CTP) Kelas C',
+        labelEn: 'Child-Turcotte-Pugh (CTP) Class C',
+        value: '155 (31.4%)',
+      },
+      {
+        labelId: 'Etiologi: Hepatitis B',
+        labelEn: 'Etiology: Hepatitis B',
+        value: '126 (31.8%)',
+      },
+      {
+        labelId: 'Etiologi: Hepatitis C',
+        labelEn: 'Etiology: Hepatitis C',
+        value: '17 (4.3%)',
+      },
+      {
+        labelId: 'Etiologi: Riwayat Konsumsi Alkohol',
+        labelEn: 'Etiology: Alcohol Use History',
+        value: '13 (4.5%)',
+      },
+      {
+        labelId: 'Etiologi: Kriptogenik / Lainnya',
+        labelEn: 'Etiology: Unknown / Cryptogenic',
+        value: '253 (63.9%)',
+      },
+    ],
+  },
+  {
+    category: 'Manifestasi Klinis & Komplikasi Dekompensasi',
+    categoryId: 'Manifestasi Klinis & Komplikasi Dekompensasi',
+    categoryEn: 'Clinical Manifestations & Complications',
+    items: [
+      {
+        labelId: 'Varises Esofagus (Esophageal Varices)',
+        labelEn: 'Esophageal Varices',
+        value: '213 (36.6%)',
+      },
+      {
+        labelId: 'Asites (Ascites)',
+        labelEn: 'Ascites',
+        value: '194 (33.3%)',
+      },
+      {
+        labelId: 'Melena / Perdarahan Saluran Cerna',
+        labelEn: 'Melena / GI Bleeding',
+        value: '118 (20.3%)',
+      },
+      {
+        labelId: 'Ensefalopati Hepatikum (HE)',
+        labelEn: 'Hepatic Encephalopathy (HE)',
+        value: '113 (19.4%)',
+      },
+      {
+        labelId: 'Ikterus / Jaundice',
+        labelEn: 'Jaundice',
+        value: '22 (3.8%)',
+      },
+      {
+        labelId: 'Spontaneous Bacterial Peritonitis (SBP)',
+        labelEn: 'Spontaneous Bacterial Peritonitis (SBP)',
+        value: '5 (0.9%)',
+      },
+    ],
+  },
+  {
+    category: 'Komorbiditas Ekstrahepatik',
+    categoryId: 'Komorbiditas Ekstrahepatik',
+    categoryEn: 'Extrahepatic Comorbidities',
+    items: [
+      {
+        labelId: 'Pneumonia / Infeksi Respiratori',
+        labelEn: 'Pneumonia / Respiratory Infection',
+        value: '125 (21.5%)',
+      },
+      {
+        labelId: 'Penyakit Ginjal Kronik (CKD)',
+        labelEn: 'Chronic Kidney Disease (CKD)',
+        value: '101 (17.4%)',
+      },
+      {
+        labelId: 'Diabetes Mellitus',
+        labelEn: 'Diabetes Mellitus',
+        value: '64 (11.0%)',
+      },
+      {
+        labelId: 'Sepsis',
+        labelEn: 'Sepsis',
+        value: '46 (7.9%)',
+      },
+      {
+        labelId: 'Hipertensi',
+        labelEn: 'Hypertension',
+        value: '43 (7.4%)',
+      },
+    ],
+  },
+];
+
+export const MODEL_METRICS_TABLE: MetricRow[] = [
+  {
+    metric: 'n_sample',
+    labelId: 'Jumlah Sampel (n)',
+    labelEn: 'Sample Size (n)',
+    descriptionId: 'Total pasien yang dianalisis dalam kohort evaluasi',
+    descriptionEn: 'Total evaluated patients in the cohort',
+    mortalityRf: '395',
+    mortalityXgb: '395',
+    losRf: '583',
+    losXgb: '583',
+  },
+  {
+    metric: 'prevalence',
+    labelId: 'Prevalensi Kelas Positif',
+    labelEn: 'Prevalence (Positive Class)',
+    descriptionId: 'Persentase kejadian outcome klinis pada kohort',
+    descriptionEn: 'Proportion of positive outcome events in cohort',
+    mortalityRf: '23.8%',
+    mortalityXgb: '23.8%',
+    losRf: '40.5%',
+    losXgb: '40.5%',
+  },
+  {
+    metric: 'auroc',
+    labelId: 'AUROC (95% CI)',
+    labelEn: 'AUROC (95% CI)',
+    descriptionId: 'Area under the ROC curve (kemampuan diskriminasi model)',
+    descriptionEn: 'Area under the ROC curve (model discriminatory power)',
+    mortalityRf: '0.8391 (0.7911–0.8853)',
+    mortalityXgb: '0.8371 (0.7844–0.8858)',
+    losRf: '0.5664 (0.5156–0.6118)',
+    losXgb: '0.5005 (0.4557–0.5567)',
+    highlight: true,
+  },
+  {
+    metric: 'ap',
+    labelId: 'Average Precision (PR-AUC)',
+    labelEn: 'Average Precision (PR-AUC)',
+    descriptionId:
+      'Area di bawah kurva Precision-Recall (krusial untuk data imbalance)',
+    descriptionEn: 'Area under the Precision-Recall curve',
+    mortalityRf: '0.6301',
+    mortalityXgb: '0.6595',
+    losRf: '0.4755',
+    losXgb: '0.4339',
+  },
+  {
+    metric: 'accuracy',
+    labelId: 'Akurasi Keseluruhan',
+    labelEn: 'Overall Accuracy',
+    descriptionId: 'Proporsi prediksi benar terhadap seluruh kasus',
+    descriptionEn: 'Proportion of correct predictions overall',
+    mortalityRf: '0.8101 (81.0%)',
+    mortalityXgb: '0.8177 (81.8%)',
+    losRf: '0.5800 (58.0%)',
+    losXgb: '0.5200 (52.0%)',
+  },
+  {
+    metric: 'sensitivity',
+    labelId: 'Sensitivitas / Recall',
+    labelEn: 'Sensitivity / Recall',
+    descriptionId:
+      'Kemampuan mendeteksi pasien berisiko tinggi (True Positive Rate)',
+    descriptionEn: 'Ability to detect high-risk patients (True Positive Rate)',
+    mortalityRf: '0.6596',
+    mortalityXgb: '0.6706',
+    losRf: '0.5000',
+    losXgb: '0.4407',
+  },
+  {
+    metric: 'specificity',
+    labelId: 'Spesifisitas',
+    labelEn: 'Specificity',
+    descriptionId:
+      'Kemampuan mengidentifikasi pasien yang selamat/low risk (True Negative Rate)',
+    descriptionEn: 'Ability to correctly identify surviving/low-risk patients',
+    mortalityRf: '0.8571',
+    mortalityXgb: '0.8638',
+    losRf: '0.6311',
+    losXgb: '0.5821',
+  },
+  {
+    metric: 'precision',
+    labelId: 'Presisi / PPV',
+    labelEn: 'Precision / PPV',
+    descriptionId:
+      'Probabilitas pasien benar-benar mengalami kejadian saat diprediksi positif',
+    descriptionEn: 'Positive Predictive Value',
+    mortalityRf: '0.5905',
+    mortalityXgb: '0.6058',
+    losRf: '0.4797',
+    losXgb: '0.4177',
+  },
+  {
+    metric: 'npv',
+    labelId: 'NPV (Negative Predictive Value)',
+    labelEn: 'NPV (Negative Predictive Value)',
+    descriptionId:
+      'Probabilitas pasien benar-benar selamat saat diprediksi negatif',
+    descriptionEn: 'Negative Predictive Value',
+    mortalityRf: '0.8897',
+    mortalityXgb: '0.8935',
+    losRf: '0.6499',
+    losXgb: '0.6048',
+  },
+  {
+    metric: 'f1',
+    labelId: 'F1-Score',
+    labelEn: 'F1-Score',
+    descriptionId: 'Rata-rata harmonik antara presisi dan sensitivitas',
+    descriptionEn: 'Harmonic mean of precision and sensitivity',
+    mortalityRf: '0.6231',
+    mortalityXgb: '0.6364',
+    losRf: '0.4896',
+    losXgb: '0.4289',
+    highlight: true,
+  },
+  {
+    metric: 'mcc',
+    labelId: 'Matthews Correlation Coeff. (MCC)',
+    labelEn: 'Matthews Correlation Coeff. (MCC)',
+    descriptionId:
+      'Koefisien korelasi kualitas klasifikasi biner seimbang (-1 hingga +1)',
+    descriptionEn: 'Balanced binary classification quality measure (-1 to +1)',
+    mortalityRf: '0.4981',
+    mortalityXgb: '0.5163',
+    losRf: '0.1303',
+    losXgb: '0.0226',
+    highlight: true,
+  },
+  {
+    metric: 'brier',
+    labelId: 'Brier Score (Kalibrasi Probabilitas)',
+    labelEn: 'Brier Score (Calibration)',
+    descriptionId:
+      'Mengukur akurasi kalibrasi probabilitas (nilai lebih kecil = lebih presisi)',
+    descriptionEn:
+      'Mean squared difference between predicted probability and actual outcome',
+    mortalityRf: '0.1475',
+    mortalityXgb: '0.1333',
+    losRf: '0.2443',
+    losXgb: '0.2654',
+  },
+];
+
+export const DOSE_APPROPRIATENESS_DATA: DoseAppropriatenessItem[] = [
+  {
+    drug: 'Spironolactone (vs Standar Dosis)',
+    n: 286,
+    appropriateCount: 113,
+    appropriatePct: '39.5%',
+    inappropriateCount: 173,
+    inappropriatePct: '60.5%',
+    category: 'Diuretik',
+  },
+  {
+    drug: 'Diuretik (Penyesuaian eGFR)',
+    n: 283,
+    appropriateCount: 161,
+    appropriatePct: '61.2%',
+    inappropriateCount: 102,
+    inappropriatePct: '38.8%',
+    category: 'Diuretik',
+  },
+  {
+    drug: 'Kombinasi Spironolakton + Furosemid',
+    n: 286,
+    appropriateCount: 103,
+    appropriatePct: '36.0%',
+    inappropriateCount: 183,
+    inappropriatePct: '64.0%',
+    category: 'Diuretik',
+  },
+  {
+    drug: 'Beta-Blocker (Propranolol / Carvedilol)',
+    n: 227,
+    appropriateCount: 148,
+    appropriatePct: '65.2%',
+    inappropriateCount: 79,
+    inappropriatePct: '34.8%',
+    category: 'Kardiovaskular',
+  },
+  {
+    drug: 'Analgesik (Parasetamol)',
+    n: 130,
+    appropriateCount: 116,
+    appropriatePct: '89.2%',
+    inappropriateCount: 14,
+    inappropriatePct: '10.8%',
+    category: 'Analgesik',
+  },
+  {
+    drug: 'Ampisilin-Sulbaktam',
+    n: 208,
+    appropriateCount: 73,
+    appropriatePct: '35.1%',
+    inappropriateCount: 135,
+    inappropriatePct: '64.9%',
+    category: 'Antibiotik',
+  },
+  {
+    drug: 'Seftriakson (Ceftriaxone)',
+    n: 135,
+    appropriateCount: 57,
+    appropriatePct: '42.2%',
+    inappropriateCount: 77,
+    inappropriatePct: '57.0%',
+    category: 'Antibiotik',
+  },
+  {
+    drug: 'Levofloxacin',
+    n: 51,
+    appropriateCount: 15,
+    appropriatePct: '29.4%',
+    inappropriateCount: 36,
+    inappropriatePct: '70.6%',
+    category: 'Antibiotik',
+  },
+  {
+    drug: 'Azitromisin (Azithromycin)',
+    n: 50,
+    appropriateCount: 31,
+    appropriatePct: '62.0%',
+    inappropriateCount: 19,
+    inappropriatePct: '38.0%',
+    category: 'Antibiotik',
+  },
+  {
+    drug: 'Antibiotik (Semua Jenis Digabung)',
+    n: 208,
+    appropriateCount: 55,
+    appropriatePct: '26.4%',
+    inappropriateCount: 152,
+    inappropriatePct: '73.6%',
+    category: 'Antibiotik',
+  },
+  {
+    drug: 'Statin',
+    n: 15,
+    appropriateCount: 1,
+    appropriatePct: '6.7%',
+    inappropriateCount: 14,
+    inappropriatePct: '93.3%',
+    category: 'Lainnya',
+  },
+];
+
+export const CONCORDANCE_CASES: ConcordancePatientCase[] = [
+  {
+    patient: 1,
+    ctp: 'B',
+    egfr: 77,
+    drug: 'Spironolactone–furosemide',
+    systemRecommendation:
+      'Monitor/Reduce (spironolactone 50–100 mg + furosemide 10–20 mg/day)',
+    clinicalLabel: 'Appropriate',
+    agreement: 'Concordant',
+  },
+  {
+    patient: 1,
+    ctp: 'B',
+    egfr: 77,
+    drug: 'Carvedilol',
+    systemRecommendation: 'Monitor/Reduce (3.125–6.25 mg/day)',
+    clinicalLabel: 'Appropriate',
+    agreement: 'Concordant',
+  },
+  {
+    patient: 1,
+    ctp: 'B',
+    egfr: 77,
+    drug: 'Ampicillin-sulbactam',
+    systemRecommendation: 'Use, standard interval (q6h)',
+    clinicalLabel: 'Appropriate',
+    agreement: 'Concordant',
+  },
+  {
+    patient: 2,
+    ctp: 'B',
+    egfr: 60,
+    drug: 'Spironolactone–furosemide',
+    systemRecommendation:
+      'Monitor/Reduce (spironolactone 50–100 mg + furosemide 10–20 mg/day)',
+    clinicalLabel: 'Appropriate',
+    agreement: 'Concordant',
+  },
+  {
+    patient: 2,
+    ctp: 'B',
+    egfr: 60,
+    drug: 'Propranolol',
+    systemRecommendation: 'Monitor/Reduce (10–20 mg/day)',
+    clinicalLabel: 'Appropriate',
+    agreement: 'Concordant',
+  },
+  {
+    patient: 2,
+    ctp: 'B',
+    egfr: 60,
+    drug: 'Ampicillin-sulbactam',
+    systemRecommendation: 'Use, standard interval (q6h)',
+    clinicalLabel: 'Inappropriate (dose too high)',
+    agreement: 'Discordant',
+  },
+  {
+    patient: 2,
+    ctp: 'B',
+    egfr: 60,
+    drug: 'Azithromycin',
+    systemRecommendation: 'Use, standard dose (500 mg/day)',
+    clinicalLabel: 'Appropriate',
+    agreement: 'Concordant',
+  },
+  {
+    patient: 3,
+    ctp: 'C',
+    egfr: 52,
+    drug: 'Spironolactone–furosemide',
+    systemRecommendation: 'Reduce 25–50%',
+    clinicalLabel: 'Inappropriate (dose too high)',
+    agreement: 'Concordant (direction)',
+  },
+  {
+    patient: 3,
+    ctp: 'C',
+    egfr: 52,
+    drug: 'Propranolol',
+    systemRecommendation: 'Avoid',
+    clinicalLabel: 'Inappropriate (should be avoided)',
+    agreement: 'Concordant',
+  },
+  {
+    patient: 3,
+    ctp: 'C',
+    egfr: 52,
+    drug: 'Ampicillin-sulbactam',
+    systemRecommendation: 'Use, standard interval (q6h)',
+    clinicalLabel: 'Inappropriate (dose too high)',
+    agreement: 'Discordant',
+  },
+  {
+    patient: 3,
+    ctp: 'C',
+    egfr: 52,
+    drug: 'Levofloxacin',
+    systemRecommendation: 'Use/Monitor, 500 mg/day',
+    clinicalLabel: 'Inappropriate',
+    agreement: 'Discordant',
+  },
+  {
+    patient: 4,
+    ctp: 'C',
+    egfr: 20,
+    drug: 'Spironolactone–furosemide',
+    systemRecommendation: 'Avoid / very low dose',
+    clinicalLabel: 'Inappropriate (should be avoided)',
+    agreement: 'Concordant',
+  },
+  {
+    patient: 4,
+    ctp: 'C',
+    egfr: 20,
+    drug: 'Carvedilol',
+    systemRecommendation: 'Avoid',
+    clinicalLabel: 'Inappropriate (should be avoided)',
+    agreement: 'Concordant',
+  },
+  {
+    patient: 4,
+    ctp: 'C',
+    egfr: 20,
+    drug: 'Ampicillin-sulbactam',
+    systemRecommendation: 'Reduce 50%, q12h',
+    clinicalLabel: 'Inappropriate (dose too low)',
+    agreement: 'Concordant (direction)',
+  },
+  {
+    patient: 4,
+    ctp: 'C',
+    egfr: 20,
+    drug: 'Levofloxacin',
+    systemRecommendation: 'Avoid',
+    clinicalLabel: 'Inappropriate',
+    agreement: 'Concordant',
+  },
+  {
+    patient: 5,
+    ctp: 'C',
+    egfr: 37,
+    drug: 'Spironolactone–furosemide',
+    systemRecommendation: 'Reduce 25–50%',
+    clinicalLabel: 'Inappropriate (dose too high)',
+    agreement: 'Concordant (direction)',
+  },
+  {
+    patient: 5,
+    ctp: 'C',
+    egfr: 37,
+    drug: 'Propranolol',
+    systemRecommendation: 'Avoid',
+    clinicalLabel: 'Inappropriate (should be avoided)',
+    agreement: 'Concordant',
+  },
+  {
+    patient: 5,
+    ctp: 'C',
+    egfr: 37,
+    drug: 'Ampicillin-sulbactam',
+    systemRecommendation: 'Use, reduced interval (q8–12h)',
+    clinicalLabel: 'Inappropriate (dose too high)',
+    agreement: 'Concordant (direction)',
+  },
+  {
+    patient: 5,
+    ctp: 'C',
+    egfr: 37,
+    drug: 'Levofloxacin',
+    systemRecommendation: 'Use/Monitor, 250 mg/day',
+    clinicalLabel: 'Inappropriate',
+    agreement: 'Discordant',
+  },
+];
+
+export const SCIENTIFIC_REFERENCES: ClinicalReference[] = [
+  {
+    id: 1,
+    authors: 'Biggins SW, Angeli P, Garcia-Tsao G, et al.',
+    year: 2021,
+    title:
+      'Diagnosis, Evaluation, and Management of Ascites, Spontaneous Bacterial Peritonitis and Hepatorenal Syndrome: 2021 Practice Guidance by the American Association for the Study of Liver Diseases',
+    journal: 'Hepatology',
+    volumeIssuePages: '74(2): 1014–1048',
+    doi: '10.1002/hep.31884',
+    url: 'https://doi.org/10.1002/hep.31884',
+    category: 'guideline',
+    highlight: true,
+  },
+  {
+    id: 2,
+    authors: 'European Association for the Study of the Liver (EASL)',
+    year: 2018,
+    title:
+      'EASL Clinical Practice Guidelines for the management of patients with decompensated cirrhosis',
+    journal: 'Journal of Hepatology',
+    volumeIssuePages: '69(2): 406–460',
+    doi: '10.1016/j.jhep.2018.03.024',
+    url: 'https://doi.org/10.1016/j.jhep.2018.03.024',
+    category: 'guideline',
+    highlight: true,
+  },
+  {
+    id: 3,
+    authors: 'MacIntyre IM.',
+    year: 2024,
+    title: 'Prescribing medicines for patients with renal impairment',
+    journal: 'Medicine',
+    volumeIssuePages: '52(1): 31–35',
+    doi: '10.1016/j.mpmed.2023.10.009',
+    url: 'https://doi.org/10.1016/j.mpmed.2023.10.009',
+    category: 'guideline',
+    highlight: true,
+  },
+  {
+    id: 4,
+    authors: 'Weersink R.',
+    year: 2020,
+    title:
+      'Safe use of medication in patients with cirrhosis: pharmacokinetic and pharmacodynamic considerations',
+    journal: 'Expert Opinion on Drug Metabolism & Toxicology',
+    volumeIssuePages: '16(1): 45–56',
+    doi: '10.1080/17425255.2020.1702022',
+    url: 'https://doi.org/10.1080/17425255.2020.1702022',
+    category: 'pk_dosing',
+    highlight: true,
+  },
+  {
+    id: 5,
+    authors: 'Karsten-Dafonte K, Weber L, Chmielewski F, Jaehde U, Coenen MJ.',
+    year: 2023,
+    title:
+      'Dose recommendations for common drugs in patients with liver cirrhosis: a systematic literature review',
+    journal: 'Clinical Drug Investigation',
+    volumeIssuePages: '43(8): 569–586',
+    doi: '10.1007/s40261-023-01289-0',
+    url: 'https://doi.org/10.1007/s40261-023-01289-0',
+    category: 'pk_dosing',
+    highlight: true,
+  },
+  {
+    id: 6,
+    authors: 'Karsten-Dafonte K, Lutz PL, Jansen C, Jaehde U, Coenen MJ.',
+    year: 2026,
+    title:
+      'Recommendations on drug selection and dose adjustment for patients with liver cirrhosis: results from a multidisciplinary expert panel',
+    journal: 'Clinical Drug Investigation',
+    doi: '10.1007/s40261-026-01536-0',
+    url: 'https://doi.org/10.1007/s40261-026-01536-0',
+    category: 'pk_dosing',
+    highlight: true,
+  },
+  {
+    id: 7,
+    authors: 'Comce MH, Weersink RA, Beuers U, van Hest RM, Lantinga MA.',
+    year: 2024,
+    title:
+      'Pharmacokinetics of ceftriaxone, gentamicin, meropenem and vancomycin in liver cirrhosis: a systematic review',
+    journal: 'Journal of Antimicrobial Chemotherapy',
+    volumeIssuePages: '79(11): 2750–2761',
+    doi: '10.1093/jac/dkae310',
+    url: 'https://doi.org/10.1093/jac/dkae310',
+    category: 'pk_dosing',
+  },
+  {
+    id: 8,
+    authors: 'Ozbey AC, Bachmann F, Duthaler U, Parrott NJ, Krähenbühl S.',
+    year: 2023,
+    title:
+      'Dose adjustment in patients with liver cirrhosis – comparison of two different modelling approaches',
+    journal: 'Clinical Pharmacology & Therapeutics',
+    volumeIssuePages: '114(4): 845–856',
+    doi: '10.1002/cpt.2897',
+    url: 'https://doi.org/10.1002/cpt.2897',
+    category: 'pk_dosing',
+  },
+  {
+    id: 9,
+    authors: 'Tham EKJ, Tan DJH, Danpanichkul P, Ng CH, Syn N, et al.',
+    year: 2025,
+    title:
+      'The global burden of cirrhosis and other chronic liver diseases in 2021',
+    journal: 'Liver International',
+    volumeIssuePages: '45(3)',
+    doi: '10.1111/liv.70001',
+    url: 'https://doi.org/10.1111/liv.70001',
+    category: 'general',
+  },
+  {
+    id: 10,
+    authors: 'Silvey S, Kamath PS, George J, et al.',
+    year: 2026,
+    title:
+      'Enhancement of inpatient mortality prognostication with machine learning in a prospective global cohort of patients with cirrhosis with external validation',
+    journal: 'Gastroenterology',
+    volumeIssuePages: '170(2): 345–358',
+    doi: '10.1053/j.gastro.2025.07.015',
+    url: 'https://doi.org/10.1053/j.gastro.2025.07.015',
+    category: 'ml_ai',
+    highlight: true,
+  },
+  {
+    id: 11,
+    authors: 'Kanwal F, Taylor TJ, Kramer JR, Naik ADD, Asch SM.',
+    year: 2020,
+    title:
+      'Development, validation, and evaluation of a simple machine learning model to predict cirrhosis mortality',
+    journal: 'JAMA Network Open',
+    volumeIssuePages: '3(11): e2023780',
+    doi: '10.1001/jamanetworkopen.2020.23780',
+    url: 'https://doi.org/10.1001/jamanetworkopen.2020.23780',
+    category: 'ml_ai',
+    highlight: true,
+  },
+  {
+    id: 12,
+    authors: 'Sarmast N, Ogola GO, Kouznetsova M, et al.',
+    year: 2020,
+    title:
+      'Model for End-Stage Liver Disease-Lactate and prediction of inpatient mortality in patients with chronic liver disease',
+    journal: 'Hepatology',
+    volumeIssuePages: '72(5): 1747–1757',
+    doi: '10.1002/hep.31199',
+    url: 'https://doi.org/10.1002/hep.31199',
+    category: 'prognosis',
+  },
+  {
+    id: 13,
+    authors: 'Tang X, Ren W, Huang S, Shi L, Lü M.',
+    year: 2024,
+    title:
+      'Development and validation of a nomogram for predicting in-hospital mortality of intensive care unit patients with liver cirrhosis',
+    journal: 'World Journal of Hepatology',
+    volumeIssuePages: '16(4): 625–635',
+    doi: '10.4254/wjh.v16.i4.625',
+    url: 'https://doi.org/10.4254/wjh.v16.i4.625',
+    category: 'prognosis',
+  },
+  {
+    id: 14,
+    authors: 'Hafsa H, Rasool MF, Alqahtani FM.',
+    year: 2025,
+    title:
+      'A critical review of physiologically based pharmacokinetic (PBPK) models in liver cirrhosis',
+    journal: 'Current Pharmacology Reports',
+    volumeIssuePages: '11: 23–38',
+    doi: '10.1007/s40495-025-00430-1',
+    url: 'https://doi.org/10.1007/s40495-025-00430-1',
+    category: 'pk_dosing',
+  },
+  {
+    id: 15,
+    authors: 'Tarek M, Amin AA, Biomy R, Abdelkawy KS, El-Khateeb E.',
+    year: 2026,
+    title:
+      'Using physiologically based pharmacokinetic modeling and simulations to predict antihypertensive drug doses in cirrhotic patients',
+    journal: 'The Journal of Clinical Pharmacology',
+    doi: '10.1002/jcph.70148',
+    url: 'https://doi.org/10.1002/jcph.70148',
+    category: 'pk_dosing',
+  },
+  {
+    id: 16,
+    authors: 'Mu R, Gao J, Wang X, Hu N, Yang H.',
+    year: 2025,
+    title:
+      'Pharmacokinetics of CYP2C19- and CYP3A4-metabolized drugs in cirrhosis using a whole-body PBPK approach',
+    journal: 'Pharmaceutics',
+    volumeIssuePages: '17(12): 1582',
+    doi: '10.3390/pharmaceutics17121582',
+    url: 'https://doi.org/10.3390/pharmaceutics17121582',
+    category: 'pk_dosing',
+  },
+  {
+    id: 17,
+    authors: 'Zgheib NK, Lertora JJ, Branch RA.',
+    year: 2022,
+    title: 'Effect of liver disease on pharmacokinetics',
+    journal: "Atkinson's Principles of Clinical Pharmacology, 4th ed",
+    volumeIssuePages: 'pp. 67–82',
+    doi: '10.1016/B978-0-12-819869-8.00005-7',
+    url: 'https://doi.org/10.1016/B978-0-12-819869-8.00005-7',
+    category: 'pk_dosing',
+  },
+  {
+    id: 18,
+    authors: 'Gallagher J, Biesboer AN, Killian AJ.',
+    year: 2016,
+    title: 'Pharmacologic issues in liver disease',
+    journal: 'Critical Care Clinics',
+    volumeIssuePages: '32(3): 405–419',
+    doi: '10.1016/j.ccc.2016.02.003',
+    url: 'https://doi.org/10.1016/j.ccc.2016.02.003',
+    category: 'pk_dosing',
+  },
+  {
+    id: 19,
+    authors: 'Wuyts SCM, Hilbrands NJ, Aerts MA, Borgsteede SD, Cornu P.',
+    year: 2025,
+    title:
+      'Identification of potential drug–disease interactions in hospitalized patients with liver cirrhosis and the prospective utility of clinical decision support alerts',
+    journal: 'Drugs & Therapy Perspectives',
+    volumeIssuePages: '12: 115–128',
+    doi: '10.1007/s40267-025-01200-1',
+    url: 'https://doi.org/10.1007/s40267-025-01200-1',
+    category: 'pk_dosing',
+    highlight: true,
+  },
+  {
+    id: 20,
+    authors: 'Ge J, Buenaventura A, Berrean B, Lai JC, Pletcher MJ.',
+    year: 2024,
+    title:
+      'Applying human-centred design to the construction of a cirrhosis management clinical decision support system',
+    journal: 'Hepatology Communications',
+    volumeIssuePages: '8(5): e0394',
+    doi: '10.1097/HC9.0000000000000394',
+    url: 'https://doi.org/10.1097/HC9.0000000000000394',
+    category: 'ml_ai',
+  },
+  {
+    id: 21,
+    authors: 'Savas S.',
+    year: 2025,
+    title:
+      'Explainable artificial intelligence for diagnosis and staging of liver cirrhosis using stacked ensemble and multi-task learning',
+    journal: 'Diagnostics',
+    volumeIssuePages: '15(9): 1177',
+    doi: '10.3390/diagnostics15091177',
+    url: 'https://doi.org/10.3390/diagnostics15091177',
+    category: 'ml_ai',
+    highlight: true,
+  },
+  {
+    id: 22,
+    authors: 'Methaneethorn J, Duangchaemkarn K, Reisfeld B, Habiballah S.',
+    year: 2025,
+    title:
+      'Methodological techniques used in machine learning to support individualized drug dosing regimens based on pharmacokinetic data: a scoping review',
+    journal: 'Clinical Pharmacokinetics',
+    volumeIssuePages: '64: 185–201',
+    doi: '10.1007/s40262-025-01547-8',
+    url: 'https://doi.org/10.1007/s40262-025-01547-8',
+    category: 'ml_ai',
+  },
+  {
+    id: 23,
+    authors: 'Rattanamanee K, Kiewsiri P, Poowaruttanawiwit P.',
+    year: 2026,
+    title:
+      'Artificial intelligence in hospital pharmacy practice: effectiveness, internal validity, and translational readiness: a systematic review',
+    journal: 'Thai Journal of Pharmaceutical Sciences',
+    volumeIssuePages: '50: 45–58',
+    doi: '10.56808/3027-7922.3259',
+    url: 'https://doi.org/10.56808/3027-7922.3259',
+    category: 'ml_ai',
+  },
+  {
+    id: 24,
+    authors: 'D’Amico G, Colli A, Malizia G, Casazza G.',
+    year: 2023,
+    title:
+      'The potential role of machine learning in modelling advanced chronic liver disease',
+    journal: 'Digestive and Liver Disease',
+    volumeIssuePages: '55(8): 1012–1021',
+    doi: '10.1016/j.dld.2022.12.002',
+    url: 'https://doi.org/10.1016/j.dld.2022.12.002',
+    category: 'ml_ai',
+  },
+  {
+    id: 25,
+    authors: 'Peng N, Song SJ, Hui VW-K, et al.',
+    year: 2026,
+    title:
+      'Foundations of artificial intelligence in hepatology: what a clinician needs to know',
+    journal: 'Journal of Clinical and Experimental Hepatology',
+    doi: '10.1016/j.jceh.2025.103183',
+    url: 'https://doi.org/10.1016/j.jceh.2025.103183',
+    category: 'ml_ai',
+  },
+  {
+    id: 26,
+    authors: 'Kumar D, Bakariya B, Verma C, Illés Z.',
+    year: 2026,
+    title:
+      'CARE-Cirrhosis: a multi-level explainability framework integrating predictive modeling and personalized clinical recommendation in cirrhosis care',
+    journal: 'Intelligent Pharmacy',
+    doi: '10.1016/j.ipha.2025.12.003',
+    url: 'https://doi.org/10.1016/j.ipha.2025.12.003',
+    category: 'ml_ai',
+    highlight: true,
+  },
+  {
+    id: 27,
+    authors: 'Duan Y, Sui W, Cai Z, et al.',
+    year: 2025,
+    title:
+      'Machine learning-based risk stratification for gastrointestinal bleeding in ICU patients with cirrhosis: evidence from the MIMIC database',
+    journal: 'Frontiers in Medicine',
+    volumeIssuePages: '12: 1701973',
+    doi: '10.3389/fmed.2025.1701973',
+    url: 'https://doi.org/10.3389/fmed.2025.1701973',
+    category: 'ml_ai',
+  },
+  {
+    id: 28,
+    authors: 'Shen L, Hu M, Xu X, et al.',
+    year: 2025,
+    title:
+      'Precision dosing of voriconazole in immunocompromised children under 2 years: integrated machine learning and population pharmacokinetic modeling',
+    journal: 'Frontiers in Pharmacology',
+    volumeIssuePages: '16: 1671652',
+    doi: '10.3389/fphar.2025.1671652',
+    url: 'https://doi.org/10.3389/fphar.2025.1671652',
+    category: 'pk_dosing',
+  },
+  {
+    id: 29,
+    authors: 'Lapointe-Shaw L, Georgie F, Carlone D, et al.',
+    year: 2018,
+    title:
+      'Identifying cirrhosis, decompensated cirrhosis and hepatocellular carcinoma in health administrative data: a validation study',
+    journal: 'PLoS ONE',
+    volumeIssuePages: '13(8): e0201120',
+    doi: '10.1371/journal.pone.0201120',
+    url: 'https://doi.org/10.1371/journal.pone.0201120',
+    category: 'general',
+  },
+  {
+    id: 30,
+    authors: 'Hong N, Liu C, Gao J, et al.',
+    year: 2022,
+    title:
+      'State of the art of machine learning-enabled clinical decision support in intensive care units: literature review',
+    journal: 'JMIR Medical Informatics',
+    volumeIssuePages: '10(3): e28781',
+    doi: '10.2196/28781',
+    url: 'https://doi.org/10.2196/28781',
+    category: 'ml_ai',
+  },
+  {
+    id: 31,
+    authors: 'Al-Alawi AM, Al Kaabi H, Al-Falahi Z, et al.',
+    year: 2024,
+    title:
+      'Machine learning-powered 28-day mortality prediction model for hospitalized patients with acute decompensation of liver cirrhosis',
+    journal: 'Oman Medical Journal',
+    volumeIssuePages: '39(4): e632',
+    doi: '10.5001/omj.2024.79',
+    url: 'https://doi.org/10.5001/omj.2024.79',
+    category: 'prognosis',
+  },
+  {
+    id: 32,
+    authors: 'Chai L, Zhou Y, Zhou N, et al.',
+    year: 2025,
+    title:
+      'Machine learning-based prediction model for 28-day mortality in acute kidney injury patients with liver cirrhosis: a MIMIC-IV database analysis',
+    journal: 'PLoS ONE',
+    volumeIssuePages: '20(2): e0328662',
+    doi: '10.1371/journal.pone.0328662',
+    url: 'https://doi.org/10.1371/journal.pone.0328662',
+    category: 'prognosis',
+  },
+  {
+    id: 33,
+    authors: 'Kamath PS, Wiesner RH, Malinchoc M, Kremers W, Therneau TM, et al.',
+    year: 2001,
+    title:
+      'A model to predict survival in patients with end-stage liver disease (MELD)',
+    journal: 'Hepatology',
+    volumeIssuePages: '33(2): 464–470',
+    doi: '10.1053/jhep.2001.22172',
+    url: 'https://doi.org/10.1053/jhep.2001.22172',
+    category: 'prognosis',
+    highlight: true,
+  },
+  {
+    id: 34,
+    authors: 'Hsieh VCR, Liu MY, Lin HC.',
+    year: 2024,
+    title:
+      'AI-enabled clinical decision support system modeling for the prediction of cirrhosis complications',
+    journal: 'IRBM',
+    volumeIssuePages: '45(3): 100854',
+    doi: '10.1016/j.irbm.2024.100854',
+    url: 'https://doi.org/10.1016/j.irbm.2024.100854',
+    category: 'ml_ai',
+  },
+  {
+    id: 35,
+    authors: 'Zhang X, Huang P, Wang X, et al.',
+    year: 2021,
+    title:
+      'Development and validation of a non-invasive model for diagnosing HBV-related liver cirrhosis',
+    journal: 'Clinica Chimica Acta',
+    volumeIssuePages: '523: 34–42',
+    doi: '10.1016/j.cca.2021.11.004',
+    url: 'https://doi.org/10.1016/j.cca.2021.11.004',
+    category: 'prognosis',
+  },
+  {
+    id: 36,
+    authors: 'Salkić N, Jovanović P, Barišić-Jaman M, Pastrovic F, Grgurević I.',
+    year: 2024,
+    title:
+      'Machine learning for short-term mortality in acute decompensation of liver cirrhosis: better than MELD score',
+    journal: 'Diagnostics',
+    volumeIssuePages: '14(10): 981',
+    doi: '10.3390/diagnostics14100981',
+    url: 'https://doi.org/10.3390/diagnostics14100981',
+    category: 'prognosis',
+    highlight: true,
+  },
+  {
+    id: 37,
+    authors: 'Sun M, Liu S, Min J, Zhong L, Zhang J, Du Z.',
+    year: 2025,
+    title:
+      'Predicting in-hospital mortality in patients with alcoholic cirrhosis complicated by severe acute kidney injury: development and validation of an explainable machine learning model',
+    journal: 'Frontiers in Medicine',
+    volumeIssuePages: '12: 1570928',
+    doi: '10.3389/fmed.2025.1570928',
+    url: 'https://doi.org/10.3389/fmed.2025.1570928',
+    category: 'ml_ai',
+  },
+  {
+    id: 38,
+    authors: 'Zhang S, Liu R, Li Z, Pan T, Wen X.',
+    year: 2026,
+    title:
+      'Predicting short-term mortality in severe cirrhosis: an interpretable machine learning model integrating routine clinical indicators',
+    journal: 'PLoS ONE',
+    volumeIssuePages: '21(3): e0328952',
+    doi: '10.1371/journal.pone.0328952',
+    url: 'https://doi.org/10.1371/journal.pone.0328952',
+    category: 'ml_ai',
+  },
+  {
+    id: 39,
+    authors: 'Raharja H, Sungkar T, Ilhamd I.',
+    year: 2026,
+    title:
+      'Clinical and laboratory factors associated with in-hospital mortality among patients with decompensated liver cirrhosis: a retrospective study from Indonesia',
+    journal: 'Cureus',
+    volumeIssuePages: '18(6): e110443',
+    doi: '10.7759/cureus.110443',
+    url: 'https://doi.org/10.7759/cureus.110443',
+    category: 'prognosis',
+  },
+  {
+    id: 40,
+    authors: 'Yang H, Li X, Cao H, Cui Y, Luo Y, Liu J, Zhang Y.',
+    year: 2021,
+    title:
+      'Using machine learning methods to predict hepatic encephalopathy in cirrhotic patients with unbalanced data',
+    journal: 'Computer Methods and Programs in Biomedicine',
+    volumeIssuePages: '211: 106420',
+    doi: '10.1016/j.cmpb.2021.106420',
+    url: 'https://doi.org/10.1016/j.cmpb.2021.106420',
+    category: 'ml_ai',
+  },
+  {
+    id: 41,
+    authors: 'Wamba Momo LN, Scheltjens V, Verbeke W, Rademakers F, De Moor B.',
+    year: 2025,
+    title:
+      'Understanding deep learning models for length of stay prediction on critically ill patients through latent space visualization',
+    journal: 'Computer Methods and Programs in Biomedicine',
+    volumeIssuePages: '268: 108832',
+    doi: '10.1016/j.cmpb.2025.108832',
+    url: 'https://doi.org/10.1016/j.cmpb.2025.108832',
+    category: 'prognosis',
+  },
+  {
+    id: 42,
+    authors: 'Susnjak T, Griffin E.',
+    year: 2025,
+    title:
+      'Towards clinical prediction with transparency: an explainable AI approach to survival modelling in residential aged care',
+    journal: 'Computer Methods and Programs in Biomedicine',
+    volumeIssuePages: '263: 108653',
+    doi: '10.1016/j.cmpb.2025.108653',
+    url: 'https://doi.org/10.1016/j.cmpb.2025.108653',
+    category: 'ml_ai',
+  },
+  {
+    id: 43,
+    authors: 'Balakrishnan K, Olson S, Simon G, Pruinelli L.',
+    year: 2024,
+    title:
+      'Machine learning for post-liver transplant survival: bridging the gap for long-term outcomes through temporal variation features',
+    journal: 'Computer Methods and Programs in Biomedicine',
+    volumeIssuePages: '257: 108442',
+    doi: '10.1016/j.cmpb.2024.108442',
+    url: 'https://doi.org/10.1016/j.cmpb.2024.108442',
+    category: 'ml_ai',
+  },
+  {
+    id: 44,
+    authors: 'Kolasa K, Admassu B, Hołownia-Voloskova M, et al.',
+    year: 2024,
+    title:
+      'Systematic reviews of machine learning in healthcare: a literature review',
+    journal: 'Expert Review of Pharmacoeconomics & Outcomes Research',
+    volumeIssuePages: '24(2): 189–201',
+    doi: '10.1080/14737167.2023.2279107',
+    url: 'https://doi.org/10.1080/14737167.2023.2279107',
+    category: 'ml_ai',
+  },
+];
+
+export function filterScientificReferences(
+  references: ClinicalReference[],
+  query: string,
+  category: ReferenceCategoryFilter
+): ClinicalReference[] {
+  const normalizedQuery = query.toLowerCase().trim();
+  return references.filter((ref) => {
+    const matchesCategory = category === 'all' || ref.category === category;
+    if (!matchesCategory) {
+      return false;
+    }
+    if (!normalizedQuery) {
+      return true;
+    }
+    return (
+      ref.title.toLowerCase().includes(normalizedQuery) ||
+      ref.authors.toLowerCase().includes(normalizedQuery) ||
+      ref.journal.toLowerCase().includes(normalizedQuery) ||
+      ref.year.toString().includes(normalizedQuery) ||
+      Boolean(ref.doi && ref.doi.toLowerCase().includes(normalizedQuery))
+    );
+  });
+}

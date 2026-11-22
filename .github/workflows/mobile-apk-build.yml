@@ -1,0 +1,122 @@
+name: Mobile Internal APK Build
+
+on:
+  push:
+    tags:
+      - 'mobile-v*'
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'EAS Build profile'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - preview
+          - development
+          - production
+
+jobs:
+  verify:
+    name: Typecheck, Lint & Jest Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npm run typecheck
+
+      - name: ESLint check
+        run: npm run lint
+
+      - name: Run Jest tests
+        run: npm test -- --maxWorkers=2 --ci
+
+  build-android:
+    name: Build Internal Android APK via EAS
+    needs: verify
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Expo & EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Validate EAS project linkage & token
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "ERROR: EXPO_TOKEN secret is not configured." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          PROJECT_ID=$(node -e "const c = require('./app.json'); console.log(c.expo?.extra?.eas?.projectId || '')")
+          if [ -z "$PROJECT_ID" ]; then
+            echo "ERROR: expo.extra.eas.projectId is missing in mobile/app.json. Run 'npx eas init' locally first." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Build Android Artifact
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          BUILD_PROFILE: ${{ inputs.profile || 'preview' }}
+        run: |
+          npx eas-cli build \
+            --platform android \
+            --profile "$BUILD_PROFILE" \
+            --non-interactive \
+            --wait \
+            --json > build-result.json
+
+      - name: Publish Build Artifact Link to Summary
+        if: always()
+        run: |
+          if [ -f build-result.json ]; then
+            node -e "
+              const fs = require('fs');
+              const data = JSON.parse(fs.readFileSync('build-result.json', 'utf8'));
+              const builds = Array.isArray(data) ? data : [data];
+              const summaryLines = ['### CirrhoSmart AI Android — Internal Build Complete'];
+              for (const b of builds) {
+                summaryLines.push('- Profile: \`' + (b.buildProfile || 'preview') + '\`');
+                summaryLines.push('- App Version / VersionCode: \`' + (b.appVersion || '') + ' (' + (b.appBuildVersion || '') + ')\`');
+                if (b.artifacts && b.artifacts.buildUrl) {
+                  summaryLines.push('- Artifact Download URL (host on your website): ' + b.artifacts.buildUrl);
+                }
+              }
+              fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summaryLines.join('\n') + '\n');
+            "
+          fi
