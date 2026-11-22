@@ -7,9 +7,9 @@ import { useRouter, usePathname } from "next/navigation";
 import MainApp from "./MainApp";
 import UserGuide from "./UserGuide";
 import Methodology from "./Methodology";
-import AboutTeam from "./AboutTeam";
+import AboutProject from "./AboutProject";
 
-type ViewType = "app" | "guide" | "methodology" | "about";
+type ViewType = "app" | "about" | "guide" | "methodology";
 
 // Menerima parameter dict dari page.tsx
 export default function ClientHome({
@@ -38,13 +38,27 @@ export default function ClientHome({
   });
   const [mobileIndicator, setMobileIndicator] = useState({ left: 0, width: 0 });
 
+  // Optional: check query param or hash on client mount, default remains "app"
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const viewParam = params.get("view") as ViewType | null;
+      const hash = window.location.hash.replace("#", "") as ViewType;
+      if (viewParam && ["app", "about", "guide", "methodology"].includes(viewParam)) {
+        setCurrentView(viewParam);
+      } else if (hash && ["app", "about", "guide", "methodology"].includes(hash)) {
+        setCurrentView(hash);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const updateIndicator = () => {
       const viewToIndex: Record<string, number> = {
         app: 0,
-        guide: 1,
-        methodology: 2,
-        about: 3,
+        about: 1,
+        guide: 2,
+        methodology: 3,
       };
       const index = viewToIndex[currentView];
 
@@ -70,6 +84,13 @@ export default function ClientHome({
     return () => window.removeEventListener("resize", updateIndicator);
   }, [currentView]);
 
+  const handleNavigate = (view: ViewType) => {
+    setCurrentView(view);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-800">
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
@@ -78,7 +99,8 @@ export default function ClientHome({
             <div className="flex items-center h-full">
               <div
                 className="shrink-0 flex items-center cursor-pointer mr-8"
-                onClick={() => setCurrentView("app")}
+                onClick={() => handleNavigate("app")}
+                title={dict.nav?.calculator || "Kalkulator Klinis"}
               >
                 <span className="font-black text-red-900 text-xl tracking-tight">
                   CirrhoSmartAI
@@ -91,7 +113,7 @@ export default function ClientHome({
                   ref={(el) => {
                     desktopRefs.current[0] = el;
                   }}
-                  onClick={() => setCurrentView("app")}
+                  onClick={() => handleNavigate("app")}
                   className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === "app" ? "text-red-900" : "text-gray-500 hover:text-gray-800"}`}
                 >
                   {dict.nav?.calculator || "Kalkulator Klinis"}
@@ -100,28 +122,28 @@ export default function ClientHome({
                   ref={(el) => {
                     desktopRefs.current[1] = el;
                   }}
-                  onClick={() => setCurrentView("guide")}
+                  onClick={() => handleNavigate("about")}
+                  className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === "about" ? "text-red-900" : "text-gray-500 hover:text-gray-800"}`}
+                >
+                  {dict.nav?.about || "Tentang CirrhoSmart"}
+                </button>
+                <button
+                  ref={(el) => {
+                    desktopRefs.current[2] = el;
+                  }}
+                  onClick={() => handleNavigate("guide")}
                   className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === "guide" ? "text-red-900" : "text-gray-500 hover:text-gray-800"}`}
                 >
                   {dict.nav?.guide || "Panduan"}
                 </button>
                 <button
                   ref={(el) => {
-                    desktopRefs.current[2] = el;
+                    desktopRefs.current[3] = el;
                   }}
-                  onClick={() => setCurrentView("methodology")}
+                  onClick={() => handleNavigate("methodology")}
                   className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === "methodology" ? "text-red-900" : "text-gray-500 hover:text-gray-800"}`}
                 >
                   {dict.nav?.methodology || "Metodologi & Referensi"}
-                </button>
-                <button
-                  ref={(el) => {
-                    desktopRefs.current[3] = el;
-                  }}
-                  onClick={() => setCurrentView("about")}
-                  className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === "about" ? "text-red-900" : "text-gray-500 hover:text-gray-800"}`}
-                >
-                  {dict.nav?.team || "Tim Peneliti"}
                 </button>
 
                 <div
@@ -170,7 +192,7 @@ export default function ClientHome({
               ref={(el) => {
                 mobileRefs.current[0] = el;
               }}
-              onClick={() => setCurrentView("app")}
+              onClick={() => handleNavigate("app")}
               className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === "app" ? "text-red-900" : "text-gray-500"}`}
             >
               {dict.nav?.calculator_short || "Kalkulator"}
@@ -179,28 +201,28 @@ export default function ClientHome({
               ref={(el) => {
                 mobileRefs.current[1] = el;
               }}
-              onClick={() => setCurrentView("guide")}
-              className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === "guide" ? "text-red-900" : "text-gray-500"}`}
+              onClick={() => handleNavigate("about")}
+              className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === "about" ? "text-red-900" : "text-gray-500"}`}
             >
-              {dict.nav?.guide || "Panduan"}
+              {dict.nav?.about_short || "Tentang"}
             </button>
             <button
               ref={(el) => {
                 mobileRefs.current[2] = el;
               }}
-              onClick={() => setCurrentView("methodology")}
-              className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === "methodology" ? "text-red-900" : "text-gray-500"}`}
+              onClick={() => handleNavigate("guide")}
+              className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === "guide" ? "text-red-900" : "text-gray-500"}`}
             >
-              {dict.nav?.methodology_short || "Metodologi"}
+              {dict.nav?.guide_short || "Panduan"}
             </button>
             <button
               ref={(el) => {
                 mobileRefs.current[3] = el;
               }}
-              onClick={() => setCurrentView("about")}
-              className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === "about" ? "text-red-900" : "text-gray-500"}`}
+              onClick={() => handleNavigate("methodology")}
+              className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === "methodology" ? "text-red-900" : "text-gray-500"}`}
             >
-              {dict.nav?.team_short || "Tim"}
+              {dict.nav?.methodology_short || "Metodologi"}
             </button>
 
             <div
@@ -217,9 +239,11 @@ export default function ClientHome({
       <div className="flex-grow">
         {/* Teruskan juga dict ke komponen anak agar mereka bisa menggunakannya */}
         {currentView === "app" && <MainApp dict={dict} />}
+        {currentView === "about" && (
+          <AboutProject dict={dict} lang={lang} onNavigate={handleNavigate} />
+        )}
         {currentView === "guide" && <UserGuide dict={dict} />}
         {currentView === "methodology" && <Methodology dict={dict} lang={lang} />}
-        {currentView === "about" && <AboutTeam dict={dict} />}
       </div>
 
       <footer className="bg-white border-t border-gray-200 mt-12">

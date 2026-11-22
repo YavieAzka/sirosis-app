@@ -463,7 +463,7 @@ export default function MortalityPredictor({ dict }: { dict: any }) {
                   {dict.mortality?.modal?.prob_title || "Probabilitas Kematian"}
                 </p>
                 <p
-                  className={`text-6xl font-black tracking-tight mb-2 ${resultMort.probability >= 0.4 ? "text-red-700" : "text-emerald-600"}`}
+                  className={`text-6xl font-black tracking-tight mb-2 font-mono tabular-nums ${resultMort.probability >= 0.4 ? "text-red-700" : "text-emerald-600"}`}
                 >
                   {(resultMort.probability * 100).toFixed(1)}
                   <span className="text-4xl">%</span>
@@ -531,7 +531,7 @@ export default function MortalityPredictor({ dict }: { dict: any }) {
                             </span>
                           </div>
                           <span
-                            className={`px-2.5 py-1 rounded text-xs font-black min-w-[60px] text-center border ${isPositive ? "bg-red-50 text-red-700 border-red-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}
+                            className={`px-2.5 py-1 rounded text-xs font-black min-w-[60px] text-center border font-mono tabular-nums ${isPositive ? "bg-red-50 text-red-700 border-red-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}
                           >
                             {isPositive ? "+" : "-"}
                             {impactValue}%

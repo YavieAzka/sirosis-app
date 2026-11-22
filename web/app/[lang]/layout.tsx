@@ -1,22 +1,26 @@
 // File: app/[lang]/layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Public_Sans, Source_Code_Pro } from "next/font/google";
 import "../globals.css";
 import "flag-icons/css/flag-icons.min.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const publicSans = Public_Sans({
+  variable: "--font-public-sans",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const sourceCodePro = Source_Code_Pro({
+  variable: "--font-source-code-pro",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "CirrhoSmart AI",
-  description: "Cirrhosis prediction and management web application",
+  title: "CirrhoSmart AI | Clinical Decision Support System",
+  description: "Explainable AI and clinical decision support system for liver cirrhosis prognosis and personalized pharmacotherapy dosing",
 };
 
 export default async function RootLayout({
@@ -24,18 +28,16 @@ export default async function RootLayout({
   params,
 }: Readonly<{
   children: React.ReactNode;
-  // Ubah tipe data params menjadi Promise
   params: Promise<{ lang: string }>;
 }>) {
-  // Buka (unwrap) params menggunakan await
   const { lang } = await params;
 
   return (
     <html
       lang={lang}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${publicSans.variable} ${sourceCodePro.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">{children}</body>
     </html>
   );
 }

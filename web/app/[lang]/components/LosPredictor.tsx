@@ -379,7 +379,7 @@ export default function LosPredictor({ dict }: { dict: any }) {
           <div className="bg-white px-8 py-4 rounded-xl border border-red-100 shadow-inner flex items-center justify-center min-w-[140px]">
             {meldResult !== null ? (
               <div className="flex flex-col items-center">
-                <span className="text-3xl font-black text-red-800 drop-shadow-sm">
+                <span className="text-3xl font-black text-red-800 drop-shadow-sm font-mono tabular-nums">
                   {meldResult}
                 </span>
                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
@@ -419,7 +419,7 @@ export default function LosPredictor({ dict }: { dict: any }) {
                   Risiko Rawat Inap &gt; 7 Hari
                 </p>
                 <p
-                  className={`text-6xl font-black tracking-tight ${predictionLos >= 0.5 ? "text-amber-700" : "text-blue-600"}`}
+                  className={`text-6xl font-black tracking-tight font-mono tabular-nums ${predictionLos >= 0.5 ? "text-amber-700" : "text-blue-600"}`}
                 >
                   {(predictionLos * 100).toFixed(1)}
                   <span className="text-4xl">%</span>

@@ -145,7 +145,7 @@ export default function Methodology({ dict, lang = "id" }: MethodologyProps) {
               <span className="text-xs text-red-200 block font-medium">
                 {isEn ? "Patient Cohort" : "Kohort Pasien"}
               </span>
-              <span className="text-base sm:text-lg font-extrabold text-white block mt-0.5">
+              <span className="text-base sm:text-lg font-extrabold text-white block mt-0.5 font-mono tabular-nums">
                 583 {isEn ? "Inpatients" : "Pasien"}
               </span>
               <span className="text-[11px] text-red-200/80">RSUP Dr. M. Djamil</span>
@@ -155,7 +155,7 @@ export default function Methodology({ dict, lang = "id" }: MethodologyProps) {
               <span className="text-xs text-red-200 block font-medium">
                 {isEn ? "Ethics Approval" : "Persetujuan Etik"}
               </span>
-              <span className="text-base sm:text-lg font-extrabold text-white block mt-0.5">
+              <span className="text-base sm:text-lg font-extrabold text-white block mt-0.5 font-mono tabular-nums">
                 KEPK No. 1027
               </span>
               <span className="text-[11px] text-red-200/80">22 Juli 2025</span>
@@ -165,20 +165,20 @@ export default function Methodology({ dict, lang = "id" }: MethodologyProps) {
               <span className="text-xs text-red-200 block font-medium">
                 {isEn ? "Mortality AUROC (RF)" : "AUROC Mortalitas (RF)"}
               </span>
-              <span className="text-base sm:text-lg font-extrabold text-emerald-300 block mt-0.5">
+              <span className="text-base sm:text-lg font-extrabold text-emerald-300 block mt-0.5 font-mono tabular-nums">
                 0.8391
               </span>
-              <span className="text-[11px] text-red-200/80">95% CI: 0.791–0.885</span>
+              <span className="text-[11px] text-red-200/80 font-mono tabular-nums">95% CI: 0.791–0.885</span>
             </div>
 
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3.5 border border-white/10">
               <span className="text-xs text-red-200 block font-medium">
                 {isEn ? "Dose Concordance" : "Konkordansi Dosis"}
               </span>
-              <span className="text-base sm:text-lg font-extrabold text-amber-300 block mt-0.5">
+              <span className="text-base sm:text-lg font-extrabold text-amber-300 block mt-0.5 font-mono tabular-nums">
                 84.2%
               </span>
-              <span className="text-[11px] text-red-200/80">
+              <span className="text-[11px] text-red-200/80 font-mono tabular-nums">
                 16/19 {isEn ? "Case evaluations" : "Evaluasi klinis"}
               </span>
             </div>
@@ -383,7 +383,7 @@ export default function Methodology({ dict, lang = "id" }: MethodologyProps) {
                           <span className="text-gray-700 font-medium max-w-[60%]">
                             {isEn ? item.labelEn : item.labelId}
                           </span>
-                          <span className="font-extrabold text-gray-900 text-right">
+                          <span className="font-extrabold text-gray-900 text-right font-mono tabular-nums">
                             {item.value}
                           </span>
                         </div>
@@ -593,16 +593,16 @@ export default function Methodology({ dict, lang = "id" }: MethodologyProps) {
                             {isEn ? row.descriptionEn : row.descriptionId}
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-center font-extrabold text-red-900 bg-red-50/40">
+                        <td className="py-3 px-4 text-center font-extrabold text-red-900 bg-red-50/40 font-mono tabular-nums">
                           {row.mortalityRf}
                         </td>
-                        <td className="py-3 px-4 text-center text-gray-800">
+                        <td className="py-3 px-4 text-center text-gray-800 font-mono tabular-nums">
                           {row.mortalityXgb}
                         </td>
-                        <td className="py-3 px-4 text-center font-bold text-gray-900 bg-gray-100/50">
+                        <td className="py-3 px-4 text-center font-bold text-gray-900 bg-gray-100/50 font-mono tabular-nums">
                           {row.losRf}
                         </td>
-                        <td className="py-3 px-4 text-center text-gray-700">
+                        <td className="py-3 px-4 text-center text-gray-700 font-mono tabular-nums">
                           {row.losXgb}
                         </td>
                       </tr>
@@ -821,11 +821,11 @@ export default function Methodology({ dict, lang = "id" }: MethodologyProps) {
                       {DOSE_APPROPRIATENESS_DATA.map((item, idx) => (
                         <tr key={idx} className="hover:bg-gray-50/60 transition-colors">
                           <td className="py-2.5 px-4 font-bold text-gray-900">{item.drug}</td>
-                          <td className="py-2.5 px-4 text-center text-gray-600">{item.n}</td>
-                          <td className="py-2.5 px-4 text-center font-bold text-emerald-700 bg-emerald-50/30">
+                          <td className="py-2.5 px-4 text-center text-gray-600 font-mono tabular-nums">{item.n}</td>
+                          <td className="py-2.5 px-4 text-center font-bold text-emerald-700 bg-emerald-50/30 font-mono tabular-nums">
                             {item.appropriateCount} ({item.appropriatePct})
                           </td>
-                          <td className="py-2.5 px-4 text-center font-bold text-red-700 bg-red-50/30">
+                          <td className="py-2.5 px-4 text-center font-bold text-red-700 bg-red-50/30 font-mono tabular-nums">
                             {item.inappropriateCount} ({item.inappropriatePct})
                           </td>
                           <td className="py-2.5 px-4 text-gray-600">{item.category}</td>
@@ -868,7 +868,7 @@ export default function Methodology({ dict, lang = "id" }: MethodologyProps) {
                           <tr key={idx} className="hover:bg-gray-50/60 transition-colors">
                             <td className="py-2.5 px-3 font-bold text-gray-700">P{c.patient}</td>
                             <td className="py-2.5 px-3 font-bold text-red-900">{c.ctp}</td>
-                            <td className="py-2.5 px-3 text-gray-600">{c.egfr}</td>
+                            <td className="py-2.5 px-3 text-gray-600 font-mono tabular-nums">{c.egfr}</td>
                             <td className="py-2.5 px-4 font-medium text-gray-900">{c.drug}</td>
                             <td className="py-2.5 px-4 text-gray-700 text-xs">{c.systemRecommendation}</td>
                             <td className="py-2.5 px-4 text-gray-600 text-xs">{c.clinicalLabel}</td>
@@ -1034,7 +1034,7 @@ export default function Methodology({ dict, lang = "id" }: MethodologyProps) {
                     <div
                       key={ref.id}
                       className={`p-4 sm:p-5 hover:bg-gray-50/70 transition-colors ${
-                        ref.highlight ? "border-l-4 border-l-red-800 bg-red-50/10" : ""
+                        ref.highlight ? "bg-red-50/50 ring-1 ring-inset ring-red-200 rounded-xl my-1" : ""
                       }`}
                     >
                       <div className="flex items-start justify-between gap-4">
@@ -1066,7 +1066,7 @@ export default function Methodology({ dict, lang = "id" }: MethodologyProps) {
                             href={ref.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-red-900 text-gray-700 hover:text-white border border-gray-200 text-xs font-bold transition-all shrink-0 active:scale-95"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50/60 hover:bg-red-900 text-red-900 hover:text-white border border-red-200/70 text-xs font-bold transition-all shrink-0 active:scale-95"
                             title={ref.doi ? `DOI: ${ref.doi}` : "Link Referensi"}
                           >
                             <span>DOI</span>

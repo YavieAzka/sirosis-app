@@ -2,7 +2,10 @@
   "nav": {
     "calculator": "Clinical Calculator",
     "calculator_short": "Calculator",
+    "about": "About CirrhoSmart",
+    "about_short": "About",
     "guide": "Guide",
+    "guide_short": "Guide",
     "methodology": "Methodology & References",
     "methodology_short": "Methodology",
     "team": "Research Team",

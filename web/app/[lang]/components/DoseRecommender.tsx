@@ -634,7 +634,7 @@ export default function DoseRecommender({ dict }: { dict: any }) {
                       {data.status}
                     </span>
                   </div>
-                  <p className="text-xl font-black text-gray-800 leading-tight">
+                  <p className="text-xl font-black text-gray-800 leading-tight font-mono tabular-nums tracking-tight">
                     {data.rentang_dosis}
                   </p>
 

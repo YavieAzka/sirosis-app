@@ -20,7 +20,7 @@ export default function MainApp({ dict }: { dict: any }) {
           className={`group flex-1 flex items-center justify-center gap-2 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all duration-300 active:scale-95 ${
             activeTab === "mortalitas"
               ? "bg-red-900 text-white shadow-lg"
-              : "bg-white text-gray-500 hover:bg-red-50 hover:text-red-900 border border-gray-200 border-b-0"
+              : "bg-white text-red-950/70 hover:bg-red-50 hover:text-red-900 border border-red-950/10 border-b-0"
           }`}
         >
           <HeartPulse
@@ -35,7 +35,7 @@ export default function MainApp({ dict }: { dict: any }) {
           className={`group flex-1 flex items-center justify-center gap-2 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all duration-300 active:scale-95 ${
             activeTab === "los"
               ? "bg-red-900 text-white shadow-lg"
-              : "bg-white text-gray-500 hover:bg-red-50 hover:text-red-900 border border-gray-200 border-b-0"
+              : "bg-white text-red-950/70 hover:bg-red-50 hover:text-red-900 border border-red-950/10 border-b-0"
           }`}
         >
           <Hospital
@@ -50,7 +50,7 @@ export default function MainApp({ dict }: { dict: any }) {
           className={`group flex-1 flex items-center justify-center gap-2 py-4 text-center rounded-2xl md:rounded-b-none md:rounded-t-2xl font-bold transition-all duration-300 active:scale-95 ${
             activeTab === "dosis"
               ? "bg-red-900 text-white shadow-lg"
-              : "bg-white text-gray-500 hover:bg-red-50 hover:text-red-900 border border-gray-200 border-b-0"
+              : "bg-white text-red-950/70 hover:bg-red-50 hover:text-red-900 border border-red-950/10 border-b-0"
           }`}
         >
           <Pill
