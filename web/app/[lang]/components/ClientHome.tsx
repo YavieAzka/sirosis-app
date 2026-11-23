@@ -8,25 +8,47 @@ import MainApp from "./MainApp";
 import UserGuide from "./UserGuide";
 import Methodology from "./Methodology";
 import AboutTeam from "./AboutTeam";
+import DownloadApk from "./DownloadApk";
 
-type ViewType = "app" | "guide" | "methodology" | "about";
+type ViewType = "app" | "guide" | "methodology" | "about" | "download";
+
+interface ClientHomeDict {
+  nav: Record<string, string | undefined>;
+  footer: Record<string, string | undefined>;
+  download?: Record<string, string | undefined>;
+  [key: string]: unknown;
+}
 
 // Menerima parameter dict dari page.tsx
 export default function ClientHome({
   lang,
   dict,
+  initialView = "app",
 }: {
   lang: string;
-  dict: any;
+  dict: ClientHomeDict;
+  initialView?: ViewType;
 }) {
-  const [currentView, setCurrentView] = useState<ViewType>("app");
+  const [currentView, setCurrentView] = useState<ViewType>(initialView);
 
   const router = useRouter();
   const pathname = usePathname();
   const switchLanguage = (newLang: string) => {
     if (lang === newLang) return; // Abaikan jika mengklik bahasa yang sedang aktif
-    const newPath = pathname.replace(`/${lang}`, `/${newLang}`);
+    const activePath =
+      typeof window !== "undefined" ? window.location.pathname : pathname;
+    const newPath = activePath.replace(`/${lang}`, `/${newLang}`);
     router.push(newPath);
+  };
+
+  const handleSelectView = (view: ViewType) => {
+    setCurrentView(view);
+    if (typeof window !== "undefined") {
+      const targetUrl = view === "download" ? `/${lang}/download` : `/${lang}`;
+      if (window.location.pathname !== targetUrl) {
+        window.history.replaceState(null, "", targetUrl);
+      }
+    }
   };
 
   const desktopRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -40,11 +62,12 @@ export default function ClientHome({
 
   useEffect(() => {
     const updateIndicator = () => {
-      const viewToIndex: Record<string, number> = {
+      const viewToIndex: Record<ViewType, number> = {
         app: 0,
         guide: 1,
         methodology: 2,
         about: 3,
+        download: 4,
       };
       const index = viewToIndex[currentView];
 
@@ -78,7 +101,7 @@ export default function ClientHome({
             <div className="flex items-center h-full">
               <div
                 className="shrink-0 flex items-center cursor-pointer mr-8"
-                onClick={() => setCurrentView("app")}
+                onClick={() => handleSelectView("app")}
               >
                 <span className="font-black text-red-900 text-xl tracking-tight">
                   CirrhoSmartAI
@@ -91,7 +114,7 @@ export default function ClientHome({
                   ref={(el) => {
                     desktopRefs.current[0] = el;
                   }}
-                  onClick={() => setCurrentView("app")}
+                  onClick={() => handleSelectView("app")}
                   className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === "app" ? "text-red-900" : "text-gray-500 hover:text-gray-800"}`}
                 >
                   {dict.nav?.calculator || "Kalkulator Klinis"}
@@ -100,7 +123,7 @@ export default function ClientHome({
                   ref={(el) => {
                     desktopRefs.current[1] = el;
                   }}
-                  onClick={() => setCurrentView("guide")}
+                  onClick={() => handleSelectView("guide")}
                   className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === "guide" ? "text-red-900" : "text-gray-500 hover:text-gray-800"}`}
                 >
                   {dict.nav?.guide || "Panduan"}
@@ -109,7 +132,7 @@ export default function ClientHome({
                   ref={(el) => {
                     desktopRefs.current[2] = el;
                   }}
-                  onClick={() => setCurrentView("methodology")}
+                  onClick={() => handleSelectView("methodology")}
                   className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === "methodology" ? "text-red-900" : "text-gray-500 hover:text-gray-800"}`}
                 >
                   {dict.nav?.methodology || "Metodologi & Referensi"}
@@ -118,10 +141,19 @@ export default function ClientHome({
                   ref={(el) => {
                     desktopRefs.current[3] = el;
                   }}
-                  onClick={() => setCurrentView("about")}
+                  onClick={() => handleSelectView("about")}
                   className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === "about" ? "text-red-900" : "text-gray-500 hover:text-gray-800"}`}
                 >
                   {dict.nav?.team || "Tim Peneliti"}
+                </button>
+                <button
+                  ref={(el) => {
+                    desktopRefs.current[4] = el;
+                  }}
+                  onClick={() => handleSelectView("download")}
+                  className={`inline-flex items-center px-4 h-full text-sm font-bold transition-colors duration-300 z-10 ${currentView === "download" ? "text-red-900" : "text-gray-500 hover:text-gray-800"}`}
+                >
+                  {dict.nav?.download || "Download APK"}
                 </button>
 
                 <div
@@ -170,7 +202,7 @@ export default function ClientHome({
               ref={(el) => {
                 mobileRefs.current[0] = el;
               }}
-              onClick={() => setCurrentView("app")}
+              onClick={() => handleSelectView("app")}
               className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === "app" ? "text-red-900" : "text-gray-500"}`}
             >
               {dict.nav?.calculator_short || "Kalkulator"}
@@ -179,7 +211,7 @@ export default function ClientHome({
               ref={(el) => {
                 mobileRefs.current[1] = el;
               }}
-              onClick={() => setCurrentView("guide")}
+              onClick={() => handleSelectView("guide")}
               className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === "guide" ? "text-red-900" : "text-gray-500"}`}
             >
               {dict.nav?.guide || "Panduan"}
@@ -188,7 +220,7 @@ export default function ClientHome({
               ref={(el) => {
                 mobileRefs.current[2] = el;
               }}
-              onClick={() => setCurrentView("methodology")}
+              onClick={() => handleSelectView("methodology")}
               className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === "methodology" ? "text-red-900" : "text-gray-500"}`}
             >
               {dict.nav?.methodology_short || "Metodologi"}
@@ -197,10 +229,19 @@ export default function ClientHome({
               ref={(el) => {
                 mobileRefs.current[3] = el;
               }}
-              onClick={() => setCurrentView("about")}
+              onClick={() => handleSelectView("about")}
               className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === "about" ? "text-red-900" : "text-gray-500"}`}
             >
               {dict.nav?.team_short || "Tim"}
+            </button>
+            <button
+              ref={(el) => {
+                mobileRefs.current[4] = el;
+              }}
+              onClick={() => handleSelectView("download")}
+              className={`px-5 py-3.5 text-xs font-bold whitespace-nowrap transition-colors duration-300 z-10 ${currentView === "download" ? "text-red-900" : "text-gray-500"}`}
+            >
+              {dict.nav?.download_short || "Download"}
             </button>
 
             <div
@@ -220,6 +261,7 @@ export default function ClientHome({
         {currentView === "guide" && <UserGuide dict={dict} />}
         {currentView === "methodology" && <Methodology dict={dict} />}
         {currentView === "about" && <AboutTeam dict={dict} />}
+        {currentView === "download" && <DownloadApk dict={dict} />}
       </div>
 
       <footer className="bg-white border-t border-gray-200 mt-12">
